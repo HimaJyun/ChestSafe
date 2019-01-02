@@ -1,0 +1,82 @@
+doNotHavePermission: "&cYou don't have permission!!"
+missingArgument: "&cArgument is missing."
+invalidArgument: "&cInvalid argument&r: {value}"
+playerNotFound: "&cPlayer not found&r: {name}"
+
+notice: "{type} {block}: {name}({uuid})"
+denied: "&cThis {type} {block} is not yours."
+protected: "{type} {block}: Protection created."
+removed: "{type} {block}: Protection removed."
+ready: "Please click the block."
+
+notProtected: "&c{block} is not protected."
+notProtectable: "&c{block} is not a protectable block."
+alreadyProtected: "&c{block} is already protected."
+
+persistEnabled: "Persist is now &aenabled."
+persistDisabled: "Persist is now &cdisabled."
+flagSet: "Flag set: {flag}={value}"
+memberChanged: "Protection member changed."
+transferSuccess: "Transfer of protection was successful."
+transferWarning: "&6Warning&r: When you transfer protection you will no longer be the owner!"
+reloaded: "Config has been reloaded."
+
+info:
+    - "Type: {type}"
+    - "Owner: {owner}({uuid})"
+    - "Member: [{members}]"
+    - "Flag: &{{flags}&}"
+
+cleanup:
+    start: "Cleanup: started. ({speed} check per second)"
+    progress: "Cleanup: {checked} protections checked, {removed} protections removed."
+    removed: "Cleanup: removed world={world}, x={x}, y={y}, z={z}"
+    end: "Cleanup: finished."
+    already: "Cleanup: already in progress."
+    cancelled: "Cleanup: cancelled."
+
+help:
+    private: "Create private protection."
+    public: "Create public protection."
+    flag: "Specify a flag for protection."
+    remove: "Remove protection."
+    info: "Display protection information."
+    member: "Add/Remove protection members."
+    transfer: "Change protection owner."
+    persist: "Perform operations permanently."
+    cleanup: "Delete protection of nonexistent blocks."
+    reload: "Reload config."
+    version: "Show version."
+    help: "Show helps."
+    example: "Example:"
+    availableFlags: "Available flags: {flags}"
+
+# //*<!-- syntax -->*/
+# &0->Black(#000000)
+# &1->Dark Blue(#0000AA)
+# &2->Dark Green(#00AA00)
+# &3->Dark Aqua(#00AAAA)
+# &4->Dark Red(#AA0000)
+# &5->Purple(#AA00AA)
+# &6->Gold(#FFAA00)
+# &7->Gray(#AAAAAA)
+# &8->Dark Gray(#555555)
+# &9->Blue(#5555FF)
+# &a->Green(#55FF55)
+# &b->Aqua(#55FFFF)
+# &c->Red(#FF5555)
+# &d->Light Purple(#FF55FF)
+# &e->Yellow(#FFFF55)
+# &f->White(#FFFFFF)
+# &k->Obfuscated
+# &l->Bold
+# &m->Strikethrough
+# &n->Underline
+# &o->Italic
+# &r->Reset
+# &&->&
+# {variable}->variable
+# &{variable&}->{variable}
+
+# Don't touch
+version: 1
