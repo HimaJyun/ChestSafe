@@ -4,6 +4,7 @@ version: "${project.version}"
 website: "https://github.com/HimaJyun/ChestSafe"
 author: "HimaJyun( https://jyn.jp/ )"
 description: "ChestSafe is a block protection plugin."
+api-version: 1.13
 
 commands:
     chestsafe:

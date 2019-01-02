@@ -26,7 +26,6 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ProtectionRepository {
 
@@ -65,14 +64,10 @@ public class ProtectionRepository {
         idToProtectionCache = config.cache.protection.create();
 
         // add normalizer
-        normalizer.put(Material.BED_BLOCK, BedNormalizer.getInstance());
         normalizer.put(Material.CHEST, ChestNormalizer.getInstance());
         normalizer.put(Material.TRAPPED_CHEST, ChestNormalizer.getInstance());
-        Stream.of(
-            Material.DARK_OAK_DOOR, Material.ACACIA_DOOR, Material.BIRCH_DOOR,
-            Material.JUNGLE_DOOR, Material.SPRUCE_DOOR, Material.WOODEN_DOOR,
-            Material.IRON_DOOR_BLOCK, Material.WOODEN_DOOR)
-            .forEach(material -> normalizer.put(material, DoorNormalizer.getInstance()));
+        BedNormalizer.getBeds().forEach(material -> normalizer.put(material, BedNormalizer.getInstance()));
+        DoorNormalizer.getDoors().forEach(material -> normalizer.put(material, DoorNormalizer.getInstance()));
     }
 
     /**

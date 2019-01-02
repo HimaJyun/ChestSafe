@@ -5,10 +5,22 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.material.Door;
 
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Set;
+
 public class DoorNormalizer implements LocationNormalizer {
 
+    private static final Set<Material> DOORS = EnumSet.of(
+        Material.OAK_DOOR, Material.IRON_DOOR,
+        Material.DARK_OAK_DOOR, Material.ACACIA_DOOR, Material.BIRCH_DOOR,
+        Material.JUNGLE_DOOR, Material.SPRUCE_DOOR
+    );
+
     private static final DoorNormalizer instance = new DoorNormalizer();
+
     private DoorNormalizer() { }
+
     public static DoorNormalizer getInstance() {
         return instance;
     }
@@ -41,18 +53,10 @@ public class DoorNormalizer implements LocationNormalizer {
     }
 
     public static boolean isDoor(Material type) {
-        switch (type) {
-            case DARK_OAK_DOOR:
-            case ACACIA_DOOR:
-            case BIRCH_DOOR:
-            case JUNGLE_DOOR:
-            case SPRUCE_DOOR:
-            case WOODEN_DOOR:
-            case IRON_DOOR_BLOCK:
-            case WOOD_DOOR:
-                return true;
-            default:
-                return false;
-        }
+        return DOORS.contains(type);
+    }
+
+    public static Collection<Material> getDoors() {
+        return DOORS;
     }
 }

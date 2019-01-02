@@ -6,10 +6,25 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.material.Bed;
 
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Set;
+
 public class BedNormalizer implements LocationNormalizer {
 
+    private static final Set<Material> BEDS = EnumSet.of(
+        Material.BLACK_BED, Material.BLUE_BED, Material.BROWN_BED,
+        Material.CYAN_BED, Material.GRAY_BED, Material.GREEN_BED,
+        Material.LIGHT_BLUE_BED, Material.LIGHT_GRAY_BED, Material.LIME_BED,
+        Material.MAGENTA_BED, Material.ORANGE_BED, Material.PINK_BED,
+        Material.PURPLE_BED, Material.RED_BED, Material.WHITE_BED,
+        Material.YELLOW_BED
+    );
+
     private static final BedNormalizer instance = new BedNormalizer();
+
     private BedNormalizer() { }
+
     public static BedNormalizer getInstance() {
         return instance;
     }
@@ -57,7 +72,10 @@ public class BedNormalizer implements LocationNormalizer {
     }
 
     public static boolean isBed(Material type) {
-        return (type == Material.BED_BLOCK);
+        return BEDS.contains(type);
     }
 
+    public static Collection<Material> getBeds() {
+        return BEDS;
+    }
 }

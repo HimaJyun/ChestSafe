@@ -82,7 +82,6 @@ public class Private extends SubCommand {
     protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
         Set<String> result = Bukkit.getOnlinePlayers().stream()
             .map(Player::getName)
-            .map(str -> str.toLowerCase(Locale.ENGLISH))
             .filter(str -> str.startsWith(args.getLast()))
             .collect(Collectors.toSet());
         args.removeLast();

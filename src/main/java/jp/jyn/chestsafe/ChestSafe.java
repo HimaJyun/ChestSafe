@@ -72,7 +72,7 @@ public class ChestSafe extends JavaPlugin {
 
         // register events
         PluginManager manager = getServer().getPluginManager();
-        manager.registerEvents(new PlayerListener(main, message, registry, repository, action), this);
+        manager.registerEvents(new PlayerListener(main, message, this, registry, repository, action), this);
         manager.registerEvents(new BlockListener(main, repository), this);
         destructor.addFirst(() -> HandlerList.unregisterAll(this));
 

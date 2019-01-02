@@ -1,11 +1,11 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.config.parser.Parser;
-import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.chestsafe.command.SubCommand;
 import jp.jyn.chestsafe.config.config.MessageConfig;
+import jp.jyn.chestsafe.config.parser.Parser;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
+import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.chestsafe.uuid.UUIDRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
@@ -15,7 +15,6 @@ import org.bukkit.entity.Player;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
-import java.util.Locale;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -68,7 +67,6 @@ public class Transfer extends SubCommand {
         if (args.size() == 1) {
             return Bukkit.getOnlinePlayers().stream()
                 .map(Player::getName)
-                .map(str -> str.toLowerCase(Locale.ENGLISH))
                 .filter(str -> str.startsWith(args.getFirst()))
                 .collect(Collectors.toList());
         }

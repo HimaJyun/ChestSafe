@@ -2,6 +2,8 @@ package jp.jyn.chestsafe.config.config;
 
 import jp.jyn.chestsafe.cache.CacheFactory;
 import jp.jyn.chestsafe.protection.Protection;
+import jp.jyn.chestsafe.util.normalizer.BedNormalizer;
+import jp.jyn.chestsafe.util.normalizer.DoorNormalizer;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -188,30 +190,49 @@ public class MainConfig {
                 return Arrays.asList(Material.CHEST, Material.TRAPPED_CHEST);
             case "_SHULKER_BOX":
                 return Arrays.asList(
-                    Material.WHITE_SHULKER_BOX, Material.ORANGE_SHULKER_BOX, Material.MAGENTA_SHULKER_BOX,
+                    Material.SHULKER_BOX, Material.WHITE_SHULKER_BOX, Material.ORANGE_SHULKER_BOX,
                     Material.LIGHT_BLUE_SHULKER_BOX, Material.YELLOW_SHULKER_BOX, Material.LIME_SHULKER_BOX,
-                    Material.PINK_SHULKER_BOX, Material.GRAY_SHULKER_BOX, Material.SILVER_SHULKER_BOX,
+                    Material.PINK_SHULKER_BOX, Material.GRAY_SHULKER_BOX, Material.MAGENTA_SHULKER_BOX,
                     Material.CYAN_SHULKER_BOX, Material.PURPLE_SHULKER_BOX, Material.BLUE_SHULKER_BOX,
                     Material.BROWN_SHULKER_BOX, Material.GREEN_SHULKER_BOX, Material.RED_SHULKER_BOX,
-                    Material.BLACK_SHULKER_BOX
+                    Material.BLACK_SHULKER_BOX, Material.LIGHT_GRAY_SHULKER_BOX
                 );
             case "_FENCE_GATE":
                 return Arrays.asList(
-                    Material.FENCE_GATE, Material.SPRUCE_FENCE_GATE, Material.BIRCH_FENCE_GATE,
+                    Material.OAK_FENCE_GATE, Material.SPRUCE_FENCE_GATE, Material.BIRCH_FENCE_GATE,
                     Material.JUNGLE_FENCE_GATE, Material.DARK_OAK_FENCE_GATE, Material.ACACIA_FENCE_GATE
                 );
             case "_SIGN":
-                return Arrays.asList(Material.SIGN_POST, Material.WALL_SIGN);
+                return Arrays.asList(Material.SIGN, Material.WALL_SIGN);
             case "_DOOR":
-                return Arrays.asList(
-                    Material.WOODEN_DOOR, Material.WOOD_DOOR, Material.IRON_DOOR_BLOCK,
-                    Material.SPRUCE_DOOR, Material.BIRCH_DOOR, Material.JUNGLE_DOOR,
-                    Material.ACACIA_DOOR, Material.DARK_OAK_DOOR
-                );
+                return DoorNormalizer.getDoors();
             case "_BANNER":
-                return Arrays.asList(Material.STANDING_BANNER, Material.WALL_BANNER);
+                return Arrays.asList(
+                    Material.BLACK_BANNER, Material.BLACK_WALL_BANNER,
+                    Material.BLUE_BANNER, Material.BLUE_WALL_BANNER,
+                    Material.BROWN_BANNER, Material.BROWN_WALL_BANNER,
+                    Material.CYAN_BANNER, Material.CYAN_WALL_BANNER,
+                    Material.GRAY_BANNER, Material.GRAY_WALL_BANNER,
+                    Material.GREEN_BANNER, Material.GREEN_WALL_BANNER,
+                    Material.LIGHT_BLUE_BANNER, Material.LIGHT_BLUE_WALL_BANNER,
+                    Material.LIGHT_GRAY_BANNER, Material.LIGHT_GRAY_WALL_BANNER,
+                    Material.LIME_BANNER, Material.LIME_WALL_BANNER,
+                    Material.MAGENTA_BANNER, Material.MAGENTA_WALL_BANNER,
+                    Material.ORANGE_BANNER, Material.ORANGE_WALL_BANNER,
+                    Material.PINK_BANNER, Material.PINK_WALL_BANNER,
+                    Material.PURPLE_BANNER, Material.PURPLE_WALL_BANNER,
+                    Material.RED_BANNER, Material.RED_WALL_BANNER,
+                    Material.WHITE_BANNER, Material.WHITE_WALL_BANNER,
+                    Material.YELLOW_BANNER, Material.YELLOW_WALL_BANNER);
             case "_TRAPDOOR":
-                return Arrays.asList(Material.TRAP_DOOR, Material.IRON_TRAPDOOR);
+                return Arrays.asList(
+                    Material.OAK_DOOR, Material.IRON_TRAPDOOR,
+                    Material.ACACIA_TRAPDOOR, Material.BIRCH_TRAPDOOR,
+                    Material.DARK_OAK_TRAPDOOR, Material.JUNGLE_TRAPDOOR,
+                    Material.SPRUCE_TRAPDOOR
+                );
+            case "_BED":
+                return BedNormalizer.getBeds();
             case "*":
                 return Arrays.asList(Material.values());
             default:

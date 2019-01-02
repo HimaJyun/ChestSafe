@@ -136,7 +136,6 @@ public class Member extends SubCommand {
 
         Set<String> result = Bukkit.getOnlinePlayers().stream()
             .map(Player::getName)
-            .map(str -> str.toLowerCase(Locale.ENGLISH))
             .filter(str -> str.startsWith(args.getLast()))
             .collect(Collectors.toSet());
         args.removeLast();

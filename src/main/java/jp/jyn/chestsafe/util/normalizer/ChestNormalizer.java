@@ -4,10 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Chest;
-import org.bukkit.block.DoubleChest;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.material.Directional;
+import org.bukkit.block.data.type.Chest;
 
 import java.util.Optional;
 
@@ -28,9 +25,7 @@ public class ChestNormalizer implements LocationNormalizer {
             return block.getLocation();
         }
 
-        Block dc = pair.get();
-        Location l1 = dc.getLocation();
-        //Location l1 = searchDoubleChestPair(block).map(Block::getLocation).orElse(block.getLocation());
+        Location l1 = pair.get().getLocation();
         Location l2 = block.getLocation();
 
         int x = Math.min(l1.getBlockX(), l2.getBlockX());
@@ -51,56 +46,64 @@ public class ChestNormalizer implements LocationNormalizer {
         if (!isChest(block)) {
             return false;
         }
-        return isDoubleChest((Chest) block.getState());
+        return isDoubleChest((Chest) block.getBlockData());
     }
 
     public static boolean isDoubleChest(Chest chest) {
-        // Single Chest -> getBlockInventory == getInventory
-        // Double Chest -> getBlockInventory != getInventory
-        return (!chest.getBlockInventory().equals(chest.getInventory()));
-
-        // Alternate
-        //return !(chest.getInventory() instanceof DoubleChestInventory);
+        return chest.getType() != Chest.Type.SINGLE;
     }
 
-    public static Optional<Block> searchDoubleChestPair(Block chest) {
+    public static Optional<Block> searchDoubleChestPair(Block block) {
         // not chest
-        if (!isChest(chest)) {
+        if (!isChest(block)) {
             return Optional.empty();
         }
 
-        Chest c = (Chest) chest.getState();
+        Chest chest = (Chest) block.getBlockData();
         // not double chest
-        if (!isDoubleChest(c)) {
+        if (!isDoubleChest(chest)) {
             return Optional.empty();
         }
-
-        DoubleChest dc = (DoubleChest) c.getInventory().getHolder();
-        InventoryHolder self = c.getBlockInventory().getHolder();
-        boolean isLeft = self.equals(dc.getLeftSide());
 
         /*
                 N
             W       E
                 S
          */
-        BlockFace face = ((Directional) c.getData()).getFacing();
-        BlockFace target;
-        switch (face) {
-            case NORTH:
-            case SOUTH:
-                target = isLeft ? BlockFace.EAST : BlockFace.WEST;
-                break;
-            case WEST:
-            case EAST:
-                target = isLeft ? BlockFace.SOUTH : BlockFace.NORTH;
-                break;
-            default:
-                // あり得ない(チェストは東西南北のどちらかしか向かない)
-                throw new IllegalArgumentException("Not Chest");
-        }
+        BlockFace target =
+            chest.getType() == Chest.Type.LEFT
+                ? leftChest(chest.getFacing())
+                : rightChest(chest.getFacing());
 
         // 特定した方角に相方のチェストが居る
-        return Optional.of(chest.getRelative(target));
+        return Optional.of(block.getRelative(target));
+    }
+
+    private static BlockFace leftChest(BlockFace face) {
+        switch (face) {
+            case NORTH:
+                return BlockFace.EAST;
+            case SOUTH:
+                return BlockFace.WEST;
+            case WEST:
+                return BlockFace.NORTH;
+            case EAST:
+                return BlockFace.SOUTH;
+        }
+        throw new IllegalArgumentException("Illegal BlockFace: " + face);
+    }
+
+    private static BlockFace rightChest(BlockFace face) {
+        switch (face) {
+            case NORTH:
+                return BlockFace.WEST;
+            case SOUTH:
+                return BlockFace.EAST;
+            case WEST:
+                return BlockFace.SOUTH;
+            case EAST:
+                return BlockFace.NORTH;
+        }
+        throw new IllegalArgumentException("Illegal BlockFace: " + face);
     }
 }
