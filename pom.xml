@@ -11,6 +11,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <spigot.version>1.13.2-R0.1-SNAPSHOT</spigot.version>
+        <relocation.package>jp.jyn.chestsafe.lib</relocation.package>
     </properties>
 
     <developers>
@@ -114,10 +115,16 @@
                                     <minimizeJar>true</minimizeJar>
                                     <artifactSet>
                                         <includes>
-                                            <include>com.zaxxer:*</include>
-                                            <include>org.slf4j:*</include>
+                                            <include>org.slf4j:slf4j-jdk14</include>
+                                            <include>com.zaxxer:HikariCP</include>
                                         </includes>
                                     </artifactSet>
+                                    <relocations>
+                                        <relocation>
+                                            <pattern>com.zaxxer.hikari</pattern>
+                                            <shadedPattern>${relocation.package}.hikari</shadedPattern>
+                                        </relocation>
+                                    </relocations>
                                 </configuration>
                             </execution>
                         </executions>
