@@ -77,7 +77,7 @@ Please use [ChestSafe-Converter](https://github.com/HimaJyun/Jecon/ChestSafe-Con
 <repositories>
     <repository>
         <id>himajyun-repo</id>
-        <url>https://raw.github.com/HimaJyun/mvn-repo/master/</url>
+        <url>https://himajyun.github.io/mvn-repo/</url>
     </repository>
 </repositories>
 
@@ -85,7 +85,7 @@ Please use [ChestSafe-Converter](https://github.com/HimaJyun/Jecon/ChestSafe-Con
     <dependency>
         <groupId>jp.jyn</groupId>
         <artifactId>ChestSafe</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
     </dependency>
 </dependencies>
 ```
