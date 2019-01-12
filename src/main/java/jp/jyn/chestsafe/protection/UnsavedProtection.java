@@ -1,6 +1,7 @@
 package jp.jyn.chestsafe.protection;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -49,8 +50,8 @@ public class UnsavedProtection implements Protection {
     }
 
     @Override
-    public Set<Map.Entry<Flag, Boolean>> getFlags() {
-        return flags.entrySet();
+    public Map<Flag, Boolean> getFlags() {
+        return Collections.unmodifiableMap(flags);
     }
 
     @Override

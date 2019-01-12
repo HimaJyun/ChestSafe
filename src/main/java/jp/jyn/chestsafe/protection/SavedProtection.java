@@ -4,6 +4,7 @@ import jp.jyn.chestsafe.db.driver.ProtectionDriver;
 import jp.jyn.chestsafe.util.Lazy;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,7 +37,7 @@ public class SavedProtection implements Protection {
         members = new Lazy<>(HashSet::new);
         members.get().addAll(protection.getMembers());
         flags = new Lazy<>(() -> new EnumMap<>(Flag.class));
-        protection.getFlags().forEach(v -> flags.get().put(v.getKey(), v.getValue()));
+        protection.getFlags().forEach((key, value) -> flags.get().put(key, value));
     }
 
     public SavedProtection(int id, ProtectionDriver protectionDriver, IDRepository idRepository, ProtectionDriver.ProtectionInfo info) {
@@ -44,7 +45,7 @@ public class SavedProtection implements Protection {
         this.protectionDriver = protectionDriver;
         this.idRepository = idRepository;
 
-        type = Type.valueOf((int) info.type);
+        type = Type.valueOf(info.type);
         owner = Objects.requireNonNull(idRepository.idToUUID(info.owner));
 
         members = new Lazy<>(info.hasMember ? this::loadMembers : HashSet::new);
@@ -64,7 +65,7 @@ public class SavedProtection implements Protection {
             .entrySet()
             .stream()
             .collect(Collectors.toMap(
-                v -> Flag.valueOf((int) v.getKey()),
+                v -> Flag.valueOf(v.getKey()),
                 Map.Entry::getValue,
                 (v1, v2) -> v1,
                 () -> new EnumMap<>(Flag.class)
@@ -73,7 +74,7 @@ public class SavedProtection implements Protection {
     // endregion
 
     private void update() {
-        protectionDriver.updateProtection(id, idRepository.UUIDToId(owner), (byte) type.id, hasMember(), hasFlag());
+        protectionDriver.updateProtection(id, idRepository.UUIDToId(owner), type.id, hasMember(), hasFlag());
     }
 
     @Override
@@ -189,7 +190,7 @@ public class SavedProtection implements Protection {
 
         boolean modify = !hasFlag();
 
-        protectionDriver.setFlag(id, (byte) flag.id, value);
+        protectionDriver.setFlag(id, flag.id, value);
         flags.get().put(flag, value);
 
         if (modify) {
@@ -201,7 +202,7 @@ public class SavedProtection implements Protection {
     @Override
     public Protection removeFlag(Flag flag) {
         if (flags.get().containsKey(flag)) {
-            protectionDriver.removeFlag(id, (byte) flag.id);
+            protectionDriver.removeFlag(id, flag.id);
             flags.get().remove(flag);
 
             if (!hasFlag()) {
@@ -250,8 +251,8 @@ public class SavedProtection implements Protection {
     }
 
     @Override
-    public Set<Map.Entry<Flag, Boolean>> getFlags() {
-        return flags.get().entrySet();
+    public Map<Flag, Boolean> getFlags() {
+        return Collections.unmodifiableMap(flags.get());
     }
 
     @Override

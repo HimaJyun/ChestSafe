@@ -15,7 +15,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -142,14 +141,14 @@ public class ProtectionRepository {
 
         // set value
         int[] members = protection.getMembers().stream().mapToInt(idRepository::UUIDToId).toArray();
-        Collection<Map.Entry<Byte, Boolean>> flags = protection.getFlags().stream()
-            .map(entry -> new AbstractMap.SimpleEntry<>((byte) entry.getKey().id, entry.getValue()))
-            .collect(Collectors.toSet());
+        Map<Integer, Boolean> flags = protection.getFlags().entrySet().stream().collect(
+            Collectors.toMap(v -> v.getKey().id, Map.Entry::getValue)
+        );
 
         protectionDriver.add(
             id,
             idRepository.UUIDToId(protection.getOwner()),
-            (byte) protection.getType().id,
+            protection.getType().id,
             members,
             flags
         );

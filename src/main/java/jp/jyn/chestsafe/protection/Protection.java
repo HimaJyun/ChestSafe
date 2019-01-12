@@ -35,11 +35,12 @@ public interface Protection {
     Set<UUID> getMembers();
 
     /**
-     * Get protection flags
+     * <p>Get protection flags.</p>
+     * <p>Note: Map is unmodifiable</p>
      *
      * @return get all flags
      */
-    Set<Map.Entry<Flag, Boolean>> getFlags();
+    Map<Flag, Boolean> getFlags();
 
     // setter
 

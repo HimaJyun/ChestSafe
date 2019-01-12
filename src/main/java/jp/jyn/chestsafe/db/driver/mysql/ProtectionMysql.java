@@ -4,7 +4,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import jp.jyn.chestsafe.db.driver.ProtectionDriver;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -46,25 +45,6 @@ public class ProtectionMysql extends ProtectionDriver {
                     "       ON DELETE CASCADE" +
                     ")"
             );
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void setProtection(int id, int owner, byte type, boolean hasMember, boolean hasFlag) {
-        try (Connection connection = hikari.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                 "INSERT INTO `protection_info` (`id`,`owner`,`type`,`has_member`,`has_flag`) VALUES (?,?,?,?,?) " +
-                     "  ON DUPLICATE KEY UPDATE " +
-                     "`owner` = VALUES(`owner`), `type` = VALUES(`type`), `has_member` = VALUES(`has_member`), `has_flag` = VALUES(`has_flag`)"
-             )) {
-            statement.setInt(1, id);
-            statement.setInt(2, owner);
-            statement.setByte(3, type);
-            statement.setBoolean(4, hasMember);
-            statement.setBoolean(5, hasFlag);
-            statement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
