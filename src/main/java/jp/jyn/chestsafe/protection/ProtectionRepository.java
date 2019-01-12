@@ -5,15 +5,18 @@ import jp.jyn.chestsafe.db.DBConnector;
 import jp.jyn.chestsafe.db.driver.IDDriver.IntLocation;
 import jp.jyn.chestsafe.db.driver.ProtectionDriver;
 import jp.jyn.chestsafe.db.driver.ProtectionDriver.ProtectionInfo;
+import jp.jyn.chestsafe.event.ProtectionSetEvent;
 import jp.jyn.chestsafe.util.normalizer.BedNormalizer;
 import jp.jyn.chestsafe.util.normalizer.ChestNormalizer;
 import jp.jyn.chestsafe.util.normalizer.DoorNormalizer;
 import jp.jyn.chestsafe.util.normalizer.LocationNormalizer;
 import jp.jyn.chestsafe.util.normalizer.NoOpNormalizer;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.plugin.PluginManager;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,11 +48,18 @@ public class ProtectionRepository {
         /**
          * Already protected
          */
-        ALREADY_PROTECTED
+        ALREADY_PROTECTED,
+        /**
+         * Cancelled by event
+         */
+        CANCELLED
     }
 
     private final Map<Material, LocationNormalizer> normalizer = new EnumMap<>(Material.class);
     private final Set<Material> protectable = EnumSet.noneOf(Material.class);
+
+    private final PluginManager pluginManager = Bukkit.getServer().getPluginManager();
+    private final ProtectionSetEvent eventSet = new ProtectionSetEvent();
 
     private final ProtectionDriver protectionDriver;
     private final IDRepository idRepository;
@@ -134,6 +144,15 @@ public class ProtectionRepository {
         if (idRepository.locationToId(location).isPresent()) {
             return Result.ALREADY_PROTECTED;
         }
+
+        eventSet.setCancelled(false);
+        eventSet.setBlock(block);
+        eventSet.setProtection(protection);
+        pluginManager.callEvent(eventSet);
+        if (eventSet.isCancelled()) {
+            return Result.CANCELLED;
+        }
+        protection = eventSet.getProtection();
 
         // add protection
         IntLocation intLocation = intLocation(location);
