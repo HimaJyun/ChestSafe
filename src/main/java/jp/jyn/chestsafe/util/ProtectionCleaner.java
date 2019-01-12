@@ -3,6 +3,7 @@ package jp.jyn.chestsafe.util;
 import jp.jyn.chestsafe.config.config.MainConfig;
 import jp.jyn.chestsafe.config.config.MessageConfig;
 import jp.jyn.chestsafe.config.parser.Parser;
+import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -13,6 +14,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class ProtectionCleaner extends BukkitRunnable {
     private final Set<Material> protectable = EnumSet.noneOf(Material.class);
@@ -43,7 +45,7 @@ public class ProtectionCleaner extends BukkitRunnable {
     @Override
     public void run() {
         checked = 0;
-        offset = repository.cleanup(speed, offset, this::checker);
+        offset = repository.checkAll(speed, offset, this::check);
 
         sendMessage(message.progress.toString(variable));
 
@@ -52,7 +54,7 @@ public class ProtectionCleaner extends BukkitRunnable {
         }
     }
 
-    private boolean checker(String name, int x, int y, int z) {
+    private ProtectionRepository.Checker.Do check(String name, int x, int y, int z, Supplier<Protection> ignore) {
         variable.put("world", name).put("x", x).put("y", y).put("z", z);
 
         // block exists check
@@ -65,11 +67,13 @@ public class ProtectionCleaner extends BukkitRunnable {
 
         checked += 1;
         protection += 1;
-        if (!exists) {
-            removed += 1;
-            sendMessage(message.removed.toString(variable));
+        if (exists) {
+            return ProtectionRepository.Checker.Do.NOTHING;
         }
-        return !exists;
+
+        removed += 1;
+        sendMessage(message.removed.toString(variable));
+        return ProtectionRepository.Checker.Do.REMOVE;
     }
 
     private void sendMessage(String message) {

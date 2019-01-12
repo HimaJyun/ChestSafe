@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class ProtectionRepository {
@@ -93,12 +94,14 @@ public class ProtectionRepository {
         if (!optionalInt.isPresent()) {
             return Optional.empty();
         }
-        int id = optionalInt.getAsInt();
+        return Optional.ofNullable(get(optionalInt.getAsInt()));
+    }
 
+    private Protection get(int id) {
         // search protection cache
         Protection protection = idToProtectionCache.get(id);
         if (protection != null) {
-            return Optional.of(protection);
+            return protection;
         }
 
         // db request
@@ -106,13 +109,13 @@ public class ProtectionRepository {
         if (!infoOptional.isPresent()) {
             // Inconsistent
             idRepository.remove(id);
-            return Optional.empty();
+            return null;
         }
 
         // update cache
         protection = new SavedProtection(id, protectionDriver, idRepository, infoOptional.get());
         idToProtectionCache.put(id, protection);
-        return Optional.of(protection);
+        return protection;
     }
 
     /**
@@ -319,14 +322,14 @@ public class ProtectionRepository {
     }
 
     /**
-     * Protection cleanup
+     * Check all protections.
      *
      * @param limit    Number of protections to check
      * @param offsetId Paging offset
      * @param checker  Protection remove checker
      * @return offset id
      */
-    public int cleanup(int limit, int offsetId, CleanupChecker checker) {
+    public int checkAll(int limit, int offsetId, Checker checker) {
         Integer id = 0;
         // cache bypass search.
         for (Map.Entry<Integer, IntLocation> protection : idRepository.getProtections(limit, offsetId)) {
@@ -334,7 +337,9 @@ public class ProtectionRepository {
             IntLocation location = protection.getValue();
             String world = idRepository.idToWorld(location.world).orElse(null);
 
-            if (checker.remove(world, location.x, location.y, location.z)) {
+            final int i = id;
+            Checker.Do result = checker.check(world, location.x, location.y, location.z, () -> get(i));
+            if (result == Checker.Do.REMOVE) {
                 // remove
                 idToProtectionCache.remove(id);
                 idRepository.remove(id, location);
@@ -344,17 +349,20 @@ public class ProtectionRepository {
     }
 
     @FunctionalInterface
-    public interface CleanupChecker {
+    public interface Checker {
+        enum Do {NOTHING, REMOVE}
+
         /**
-         * Decide whether to delete protection.
+         * Check protection.
          *
-         * @param world world name
-         * @param x     x
-         * @param y     y
-         * @param z     z
-         * @return If true, protection is deleted.
+         * @param world      world name
+         * @param x          x
+         * @param y          y
+         * @param z          z
+         * @param protection protection
+         * @return What to do with this protection?
          */
-        boolean remove(String world, int x, int y, int z);
+        Do check(String world, int x, int y, int z, Supplier<Protection> protection);
     }
 
     private Location normalizeLocation(Block block) {
