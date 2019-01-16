@@ -17,6 +17,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -183,7 +184,7 @@ public class PlayerListener implements Listener {
         );
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockPlace(BlockPlaceEvent e) {
         Block block = e.getBlockPlaced();
         MainConfig.ProtectionConfig config = protectable.get(block.getType());
@@ -210,17 +211,18 @@ public class PlayerListener implements Listener {
                     return;
                 }
 
-                if (repository.set(protection, block) != ProtectionRepository.Result.SUCCESS) {
-                    return;
-                }
-
-                sender.send(
-                    player,
-                    protected_.toString(new Parser.StringVariable().put("block", block.getType()).put("type", protection.getType()))
-                );
+                setProtection(config.auto.get(), player, block);
             });
             return;
         }
+
+        setProtection(config.auto.get(), player, block);
+    }
+
+    private void setProtection(Protection.Type type, Player player, Block block) {
+        Protection protection = Protection.newProtection()
+            .setType(type)
+            .setOwner(player);
 
         if (repository.set(protection, block) != ProtectionRepository.Result.SUCCESS) {
             return;

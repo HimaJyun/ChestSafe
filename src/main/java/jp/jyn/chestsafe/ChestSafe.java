@@ -22,6 +22,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 public class ChestSafe extends JavaPlugin {
+    private static ChestSafe instance = null;
 
     private ConfigLoader config = null;
     private ProtectionRepository repository = null;
@@ -31,6 +32,7 @@ public class ChestSafe extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        instance = this;
         destructor.clear();
 
         // load config.
@@ -49,6 +51,7 @@ public class ChestSafe extends JavaPlugin {
 
         // init repository
         repository = new ProtectionRepository(main, dbConnector);
+        destructor.addFirst(() -> repository = null);
 
         // cleanup
         if (main.cleanup.enable) {
@@ -109,5 +112,9 @@ public class ChestSafe extends JavaPlugin {
      */
     public ProtectionRepository getRepository() {
         return repository;
+    }
+
+    public static ChestSafe getInstance() {
+        return instance;
     }
 }
