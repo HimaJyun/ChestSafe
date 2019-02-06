@@ -58,7 +58,7 @@ public class Info extends SubCommand {
                         .collect(Collectors.joining(", "))
                 )
                 .put("flags",
-                    protection.getFlags().stream()
+                    protection.getFlags().entrySet().stream()
                         .map(v -> v.getKey().name().toLowerCase(Locale.ENGLISH) + "=" + v.getValue())
                         .collect(Collectors.joining(", "))
                 );
