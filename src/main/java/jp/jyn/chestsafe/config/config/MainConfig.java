@@ -1,9 +1,9 @@
 package jp.jyn.chestsafe.config.config;
 
-import jp.jyn.chestsafe.cache.CacheFactory;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.util.normalizer.BedNormalizer;
 import jp.jyn.chestsafe.util.normalizer.DoorNormalizer;
+import jp.jyn.jbukkitlib.cache.CacheFactory;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -119,15 +119,13 @@ public class MainConfig {
 
     public static class CacheConfig {
         public final CacheFactory id;
-        public final CacheFactory uuid;
         public final CacheFactory protection;
         public final CacheFactory location;
 
         private CacheConfig(ConfigurationSection config) {
-            id = new CacheFactory(config.getInt("id", -1));
-            uuid = new CacheFactory(config.getInt("uuid", -1));
-            location = new CacheFactory(config.getInt("location", 30000));
-            protection = new CacheFactory(config.getInt("protection", 10000));
+            id = new CacheFactory.Sized(config.getInt("id", -1));
+            location = new CacheFactory.Sized(config.getInt("location", 30000));
+            protection = new CacheFactory.Sized(config.getInt("protection", 10000));
         }
     }
 

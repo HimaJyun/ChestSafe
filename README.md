@@ -24,8 +24,8 @@ Please use [ChestSafe-Converter](https://github.com/HimaJyun/Jecon/ChestSafe-Con
 |Command|Description|Permission|Default|
 |:------|:----------|:----------|:-----|
 |/chestsafe private|Create private protection.|chestsafe.create.private|ALL|
-|/chestsafe public|Create private protection.|chestsafe.create.public|ALL|
-|/chestsafe flag|Specify a flog for protection.|chestsafe.flag.*|ALL|
+|/chestsafe public|Create public protection.|chestsafe.create.public|ALL|
+|/chestsafe flag|Specify a flag for protection.|chestsafe.flag.*|ALL|
 |/chestsafe remove|Remove protection.|chestsafe.remove|ALL|
 |/chestsafe info|Display protection information.|chestsafe.info|ALL|
 |/chestsafe member|Add/Remove protection members.|chestsafe.member|ALL|

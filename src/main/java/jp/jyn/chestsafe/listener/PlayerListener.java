@@ -2,13 +2,15 @@ package jp.jyn.chestsafe.listener;
 
 import jp.jyn.chestsafe.config.config.MainConfig;
 import jp.jyn.chestsafe.config.config.MessageConfig;
-import jp.jyn.chestsafe.config.parser.Parser;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
-import jp.jyn.chestsafe.util.ActionBarSender;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.chestsafe.util.normalizer.ChestNormalizer;
-import jp.jyn.chestsafe.uuid.UUIDRegistry;
+import jp.jyn.jbukkitlib.config.parser.template.TemplateParser;
+import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
+import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.util.ActionBarSender;
+import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -23,7 +25,6 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
@@ -42,7 +43,7 @@ public class PlayerListener implements Listener {
     private final Map<Material, MainConfig.ProtectionConfig> protectable;
     private final boolean useActionBar;
 
-    private final Parser notice, denied, protected_, removed;
+    private final TemplateParser notice, denied, protected_, removed;
     private final Sender sender;
 
     private interface Sender {
@@ -83,11 +84,6 @@ public class PlayerListener implements Listener {
         }
     }
 
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        registry.updateCache(event.getPlayer());
-    }
-
     @EventHandler(ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent e) {
         if (e.getAction() != Action.RIGHT_CLICK_BLOCK && e.getAction() != Action.LEFT_CLICK_BLOCK) {
@@ -111,7 +107,7 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        Parser.Variable variable = new Parser.StringVariable()
+        TemplateVariable variable = StringVariable.init()
             .put("block", block.getType())
             .put("type", protection.getType());
 
@@ -126,12 +122,10 @@ public class PlayerListener implements Listener {
         }
 
         variable.put("uuid", protection.getOwner());
-        registry.getNameAsync(protection.getOwner(), name -> sender.send(
+        registry.getNameAsync(protection.getOwner()).thenAcceptSync(name -> sender.send(
             player,
-            notice.toString(
-                variable.put("name", name.orElse("Unknown"))
-            ))
-        );
+            notice.toString(variable.put("name", name.orElse("Unknown")))
+        ));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -152,7 +146,7 @@ public class PlayerListener implements Listener {
             sender.send(
                 e.getPlayer(),
                 denied.toString(
-                    new Parser.StringVariable()
+                    StringVariable.init()
                         .put("block", block.getType())
                         .put("type", protection.getType())
                 )
@@ -177,7 +171,7 @@ public class PlayerListener implements Listener {
         sender.send(
             e.getPlayer(),
             removed.toString(
-                new Parser.StringVariable()
+                StringVariable.init()
                     .put("block", block.getType())
                     .put("type", protection.getType())
             )
@@ -230,7 +224,7 @@ public class PlayerListener implements Listener {
 
         sender.send(
             player,
-            protected_.toString(new Parser.StringVariable().put("block", block.getType()).put("type", protection.getType()))
+            protected_.toString(StringVariable.init().put("block", block.getType()).put("type", protection.getType()))
         );
     }
 

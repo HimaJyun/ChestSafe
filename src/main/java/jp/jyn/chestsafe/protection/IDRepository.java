@@ -1,9 +1,9 @@
 package jp.jyn.chestsafe.protection;
 
-import jp.jyn.chestsafe.cache.CacheFactory;
 import jp.jyn.chestsafe.config.config.MainConfig;
 import jp.jyn.chestsafe.db.driver.IDDriver;
 import jp.jyn.chestsafe.db.driver.IDDriver.IntLocation;
+import jp.jyn.jbukkitlib.cache.CacheFactory;
 import org.bukkit.Location;
 import org.bukkit.World;
 
@@ -17,8 +17,8 @@ import java.util.UUID;
 public class IDRepository {
     private final IDDriver idDriver;
 
-    private final Map<String, Integer> worldToIdCache = CacheFactory.INFINITY.create();
-    private final Map<Integer, Optional<String>> idToWorldCache = CacheFactory.INFINITY.create();
+    private final Map<String, Integer> worldToIdCache = CacheFactory.Sized.INFINITY.create();
+    private final Map<Integer, Optional<String>> idToWorldCache = CacheFactory.Sized.INFINITY.create();
     private final Map<Integer, UUID> idToUUIDCache;
     private final Map<UUID, Integer> UUIDToIdCache;
     private final Map<IntLocation, OptionalInt> locationToIdCache;

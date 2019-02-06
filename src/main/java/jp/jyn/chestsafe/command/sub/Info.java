@@ -1,12 +1,13 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.chestsafe.command.SubCommand;
 import jp.jyn.chestsafe.config.config.MessageConfig;
-import jp.jyn.chestsafe.config.parser.Parser;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
-import jp.jyn.chestsafe.uuid.UUIDRegistry;
+import jp.jyn.chestsafe.util.PlayerAction;
+import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
+import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
@@ -46,9 +47,9 @@ public class Info extends SubCommand {
         // uuid -> name convert
         Set<UUID> request = new LinkedHashSet<>(protection.getMembers());
         request.add(protection.getOwner());
-        registry.getMultipleNameAsync(request, map -> {
+        registry.getMultipleNameAsync(request).thenAcceptSync(map -> {
             // set variable
-            Parser.Variable variable = new Parser.StringVariable()
+            TemplateVariable variable = StringVariable.init()
                 .put("type", protection.getType().name())
                 .put("owner", map.get(protection.getOwner()))
                 .put("uuid", protection.getOwner())

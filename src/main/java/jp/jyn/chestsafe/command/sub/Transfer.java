@@ -2,11 +2,11 @@ package jp.jyn.chestsafe.command.sub;
 
 import jp.jyn.chestsafe.command.SubCommand;
 import jp.jyn.chestsafe.config.config.MessageConfig;
-import jp.jyn.chestsafe.config.parser.Parser;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
-import jp.jyn.chestsafe.uuid.UUIDRegistry;
+import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
+import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -33,7 +33,7 @@ public class Transfer extends SubCommand {
 
     @Override
     protected boolean execCommand(Player sender, Queue<String> args) {
-        registry.getUUIDAsync(args.element(), uuid -> {
+        registry.getUUIDAsync(args.element()).thenAcceptSync(uuid -> {
             if (!uuid.isPresent()) {
                 sender.sendMessage(message.playerNotFound.toString("name", args.remove()));
                 return;
@@ -55,7 +55,7 @@ public class Transfer extends SubCommand {
 
         if (!protection.isOwner(player) &&
             !player.hasPermission("chestsafe.passthrough")) {
-            player.sendMessage(message.denied.toString(new Parser.StringVariable().put("block", block.getType()).put("type", protection.getType())));
+            player.sendMessage(message.denied.toString(StringVariable.init().put("block", block.getType()).put("type", protection.getType())));
             return;
         }
         protection.setOwner(newOwner);

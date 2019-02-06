@@ -1,12 +1,13 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.config.parser.Parser;
-import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.chestsafe.command.SubCommand;
 import jp.jyn.chestsafe.config.config.MessageConfig;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
-import jp.jyn.chestsafe.uuid.UUIDRegistry;
+import jp.jyn.chestsafe.util.PlayerAction;
+import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
+import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -73,7 +74,7 @@ public class Member extends SubCommand {
         }
 
         // get uuids
-        registry.getMultipleUUIDAsync(members.keySet(), map -> {
+        registry.getMultipleUUIDAsync(members.keySet()).thenAcceptSync(map -> {
             Set<UUID> add = new HashSet<>();
             Set<UUID> remove = new HashSet<>();
             // check user exists
@@ -101,7 +102,7 @@ public class Member extends SubCommand {
     }
 
     private void modifyMember(Player player, Block block, Collection<UUID> add, Collection<UUID> remove) {
-        Parser.Variable variable = new Parser.StringVariable().put("block", block.getType());
+        TemplateVariable variable = StringVariable.init().put("block", block.getType());
 
         Protection protection = repository.get(block).orElse(null);
         if (protection == null) {

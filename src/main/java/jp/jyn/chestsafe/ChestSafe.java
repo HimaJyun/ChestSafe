@@ -11,7 +11,7 @@ import jp.jyn.chestsafe.listener.PlayerListener;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.chestsafe.util.ProtectionCleaner;
-import jp.jyn.chestsafe.uuid.UUIDRegistry;
+import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.event.HandlerList;
@@ -43,7 +43,7 @@ public class ChestSafe extends JavaPlugin {
         MainConfig main = config.getMainConfig();
         MessageConfig message = config.getMessageConfig();
 
-        UUIDRegistry registry = new UUIDRegistry(this, main.cache);
+        UUIDRegistry registry = UUIDRegistry.getSharedCacheRegistry(this);
 
         // connect db
         DBConnector dbConnector = new DBConnector(main.database);

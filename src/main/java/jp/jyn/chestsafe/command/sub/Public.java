@@ -2,10 +2,11 @@ package jp.jyn.chestsafe.command.sub;
 
 import jp.jyn.chestsafe.command.SubCommand;
 import jp.jyn.chestsafe.config.config.MessageConfig;
-import jp.jyn.chestsafe.config.parser.Parser;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
+import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
+import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
@@ -34,7 +35,7 @@ public class Public extends SubCommand {
             .setOwner(player);
         ProtectionRepository.Result result = repository.set(protection, block);
 
-        Parser.Variable variable = new Parser.StringVariable().put("block", block.getType());
+        TemplateVariable variable = StringVariable.init().put("block", block.getType());
         switch (result) {
             case NOT_PROTECTABLE:
                 player.sendMessage(message.notProtectable.toString(variable));

@@ -1,6 +1,5 @@
 package jp.jyn.chestsafe.command;
 
-import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.chestsafe.command.sub.Cleanup;
 import jp.jyn.chestsafe.command.sub.Flag;
 import jp.jyn.chestsafe.command.sub.Help;
@@ -16,7 +15,8 @@ import jp.jyn.chestsafe.command.sub.Version;
 import jp.jyn.chestsafe.config.config.MainConfig;
 import jp.jyn.chestsafe.config.config.MessageConfig;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
-import jp.jyn.chestsafe.uuid.UUIDRegistry;
+import jp.jyn.chestsafe.util.PlayerAction;
+import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

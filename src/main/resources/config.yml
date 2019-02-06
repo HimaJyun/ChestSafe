@@ -81,7 +81,6 @@ cache:
     # -1 == Infinity(fast)
     #  0 == Disable(for expert)
     id: -1
-    uuid: -1
     # also used for negative cache meaning "does not exist".
     # It should be larger than "protection".
     location: 30000

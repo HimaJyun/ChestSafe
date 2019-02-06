@@ -1,11 +1,12 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.config.parser.Parser;
-import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.chestsafe.command.SubCommand;
 import jp.jyn.chestsafe.config.config.MessageConfig;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
+import jp.jyn.chestsafe.util.PlayerAction;
+import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
+import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
@@ -29,7 +30,7 @@ public class Remove extends SubCommand {
     }
 
     private void removeProtection(Player player, Block block) {
-        Parser.Variable variable = new Parser.StringVariable().put("block", block.getType());
+        TemplateVariable variable = StringVariable.init().put("block", block.getType());
 
         Protection protection = repository.get(block).orElse(null);
         if (protection == null) {

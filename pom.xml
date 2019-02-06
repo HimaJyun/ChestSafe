@@ -32,6 +32,10 @@
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+            <id>himajyun-repo</id>
+            <url>https://himajyun.github.io/mvn-repo/</url>
+        </repository>
     </repositories>
     <dependencies>
         <dependency>
@@ -41,6 +45,11 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>jp.jyn</groupId>
+            <artifactId>JBukkitLib</artifactId>
+            <version>1.0.0</version>
+        </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
@@ -114,11 +123,16 @@
                                     <minimizeJar>true</minimizeJar>
                                     <artifactSet>
                                         <includes>
+                                            <include>jp.jyn:JBukkitLib</include>
                                             <include>org.slf4j:slf4j-jdk14</include>
                                             <include>com.zaxxer:HikariCP</include>
                                         </includes>
                                     </artifactSet>
                                     <relocations>
+                                        <relocation>
+                                            <pattern>jp.jyn.jbukkitlib</pattern>
+                                            <shadedPattern>${relocation.package}.jbukkitlib</shadedPattern>
+                                        </relocation>
                                         <relocation>
                                             <pattern>com.zaxxer.hikari</pattern>
                                             <shadedPattern>${relocation.package}.hikari</shadedPattern>

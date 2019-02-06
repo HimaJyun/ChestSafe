@@ -2,9 +2,10 @@ package jp.jyn.chestsafe.util;
 
 import jp.jyn.chestsafe.config.config.MainConfig;
 import jp.jyn.chestsafe.config.config.MessageConfig;
-import jp.jyn.chestsafe.config.parser.Parser;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
+import jp.jyn.jbukkitlib.config.parser.template.variable.SupplierVariable;
+import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -24,7 +25,7 @@ public class ProtectionCleaner extends BukkitRunnable {
     private final int speed;
     private final CommandSender[] sender;
 
-    private final Parser.Variable variable = new Parser.SupplierVariable();
+    private final TemplateVariable variable = SupplierVariable.init();
     private int offset = 0, checked = 0;
     private int protection = 0, removed = 0;
 
