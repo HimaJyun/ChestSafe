@@ -1,5 +1,6 @@
 package jp.jyn.chestsafe.config.config;
 
+import jp.jyn.chestsafe.ChestSafe;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.util.normalizer.BedNormalizer;
 import jp.jyn.chestsafe.util.normalizer.DoorNormalizer;
@@ -7,7 +8,6 @@ import jp.jyn.jbukkitlib.cache.CacheFactory;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.util.Arrays;
@@ -30,7 +30,7 @@ public class MainConfig {
     public final DatabaseConfig database;
     public final CacheConfig cache;
 
-    public MainConfig(FileConfiguration config, Plugin plugin) {
+    public MainConfig(FileConfiguration config) {
         actionBar = config.getBoolean("actionBar");
         ProtectionConfig defaultValue = new ProtectionConfig(config.getConfigurationSection("default"));
         for (Protection.Flag flag : Protection.Flag.values()) {
@@ -48,7 +48,7 @@ public class MainConfig {
         }
 
         cleanup = new CleanupConfig(config.getConfigurationSection("cleanup"));
-        database = new DatabaseConfig(config.getConfigurationSection("database"), plugin);
+        database = new DatabaseConfig(config.getConfigurationSection("database"));
         cache = new CacheConfig(config.getConfigurationSection("cache"));
     }
 
@@ -79,11 +79,11 @@ public class MainConfig {
         public final long connectionTimeout;
         public final long idleTimeout;
 
-        private DatabaseConfig(ConfigurationSection config, Plugin plugin) {
+        private DatabaseConfig(ConfigurationSection config) {
             String tmpType = config.getString("type", "").toLowerCase(Locale.ENGLISH);
             switch (tmpType) {
                 case "sqlite":
-                    File dbfile = new File(plugin.getDataFolder(), config.getString("sqlite.file", "chestsafe.db"));
+                    File dbfile = new File(ChestSafe.getInstance().getDataFolder(), config.getString("sqlite.file", "chestsafe.db"));
                     dbfile.getParentFile().mkdirs();
                     url = "jdbc:sqlite:" + dbfile.getPath();
                     init = "PRAGMA `foreign_keys`=`ON`"; // Enable FOREIGN KEY

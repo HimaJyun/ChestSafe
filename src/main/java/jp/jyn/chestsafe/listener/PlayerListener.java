@@ -1,5 +1,6 @@
 package jp.jyn.chestsafe.listener;
 
+import jp.jyn.chestsafe.ChestSafe;
 import jp.jyn.chestsafe.config.config.MainConfig;
 import jp.jyn.chestsafe.config.config.MessageConfig;
 import jp.jyn.chestsafe.protection.Protection;
@@ -50,8 +51,8 @@ public class PlayerListener implements Listener {
         void send(Player player, String message);
     }
 
-    public PlayerListener(MainConfig config, MessageConfig message, Plugin plugin, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
-        this.plugin = plugin;
+    public PlayerListener(MainConfig config, MessageConfig message, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
+        this.plugin = ChestSafe.getInstance();
         this.protectable = config.protectable;
         this.registry = registry;
         this.repository = repository;
