@@ -1,8 +1,9 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.util.PlayerAction;
-import jp.jyn.chestsafe.command.SubCommand;
+import jp.jyn.chestsafe.command.CommandLoader;
 import jp.jyn.chestsafe.config.config.MessageConfig;
+import jp.jyn.chestsafe.util.PlayerAction;
+import jp.jyn.jbukkitlib.command.SubCommand;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -14,15 +15,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Persist extends SubCommand {
+    private final MessageConfig message;
     private final PlayerAction action;
 
     public Persist(MessageConfig message, PlayerAction action) {
-        super(message);
+        this.message = message;
         this.action = action;
     }
 
     @Override
-    protected boolean execCommand(Player sender, Queue<String> args) {
+    protected Result execCommand(Player sender, Queue<String> args) {
         boolean persist = action.getPersist(sender);
 
         String value = args.poll();
@@ -31,10 +33,10 @@ public class Persist extends SubCommand {
             persist = !persist;
         } else {
             try {
-                persist = str2Bool(value);
+                persist = CommandLoader.str2Bool(value);
             } catch (IllegalArgumentException e) {
                 sender.sendMessage(message.invalidArgument.toString("value", value));
-                return false;
+                return Result.ERROR;
             }
         }
 
@@ -45,7 +47,7 @@ public class Persist extends SubCommand {
             sender.sendMessage(message.persistDisabled.toString());
         }
 
-        return true;
+        return Result.OK;
     }
 
     @Override

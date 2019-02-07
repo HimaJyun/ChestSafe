@@ -1,10 +1,10 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.command.SubCommand;
 import jp.jyn.chestsafe.config.config.MessageConfig;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
+import jp.jyn.jbukkitlib.command.SubCommand;
 import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
 import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
@@ -19,22 +19,23 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class Info extends SubCommand {
+    private final MessageConfig message;
     private final UUIDRegistry registry;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
     public Info(MessageConfig message, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
-        super(message);
+        this.message = message;
         this.registry = registry;
         this.repository = repository;
         this.action = action;
     }
 
     @Override
-    protected boolean execCommand(Player sender, Queue<String> args) {
+    protected Result execCommand(Player sender, Queue<String> args) {
         action.setAction(sender, block -> showInfo(sender, block));
         sender.sendMessage(message.ready.toString());
-        return true;
+        return Result.OK;
     }
 
     private void showInfo(Player player, Block block) {

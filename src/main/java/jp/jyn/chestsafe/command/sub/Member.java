@@ -1,10 +1,10 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.command.SubCommand;
 import jp.jyn.chestsafe.config.config.MessageConfig;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
+import jp.jyn.jbukkitlib.command.SubCommand;
 import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
 import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
@@ -30,19 +30,20 @@ import java.util.stream.Stream;
 public class Member extends SubCommand {
     private enum Operation {ADD, REMOVE}
 
+    private final MessageConfig message;
     private final UUIDRegistry registry;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
     public Member(MessageConfig message, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
-        super(message);
+        this.message = message;
         this.registry = registry;
         this.repository = repository;
         this.action = action;
     }
 
     @Override
-    protected boolean execCommand(Player sender, Queue<String> args) {
+    protected Result execCommand(Player sender, Queue<String> args) {
         // get members args
         Map<String, Operation> members = new HashMap<>();
         String tmp = args.remove().toLowerCase(Locale.ENGLISH);
@@ -62,7 +63,7 @@ public class Member extends SubCommand {
                         value = value.substring(1);
                         if (value.isEmpty()) {
                             sender.sendMessage(message.invalidArgument.toString("value", "-"));
-                            return false;
+                            return Result.ERROR;
                         }
                     }
                     members.put(value, operation);
@@ -70,7 +71,7 @@ public class Member extends SubCommand {
                 break;
             default:
                 sender.sendMessage(message.invalidArgument.toString("value", tmp));
-                return false;
+                return Result.ERROR;
         }
 
         // get uuids
@@ -98,7 +99,7 @@ public class Member extends SubCommand {
             action.setAction(sender, b -> modifyMember(sender, b, add, remove));
             sender.sendMessage(message.ready.toString());
         });
-        return true;
+        return Result.OK;
     }
 
     private void modifyMember(Player player, Block block, Collection<UUID> add, Collection<UUID> remove) {

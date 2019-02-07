@@ -1,7 +1,8 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.command.SubCommand;
+import jp.jyn.chestsafe.ChestSafe;
 import jp.jyn.chestsafe.config.config.MessageConfig;
+import jp.jyn.jbukkitlib.command.SubCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -12,26 +13,26 @@ import org.bukkit.plugin.Plugin;
 import java.util.Queue;
 
 public class Reload extends SubCommand {
-    private final Plugin main;
+    private final MessageConfig message;
 
-    public Reload(MessageConfig message, Plugin main) {
-        super(message);
-        this.main = main;
+    public Reload(MessageConfig message) {
+        this.message = message;
     }
 
     @Override
-    protected boolean execCommand(CommandSender sender, Queue<String> args) {
+    protected Result execCommand(CommandSender sender, Queue<String> args) {
+        final Plugin plugin = ChestSafe.getInstance();
         // reload
-        main.getServer().getPluginManager().callEvent(new PluginEnableEvent(main));
-        main.onDisable();
-        main.onEnable();
-        main.getServer().getPluginManager().callEvent(new PluginDisableEvent(main));
+        plugin.getServer().getPluginManager().callEvent(new PluginEnableEvent(plugin));
+        plugin.onDisable();
+        plugin.onEnable();
+        plugin.getServer().getPluginManager().callEvent(new PluginDisableEvent(plugin));
 
         sender.sendMessage(message.reloaded.toString());
         if (sender instanceof Player) {
             Bukkit.getConsoleSender().sendMessage(message.reloaded.toString());
         }
-        return true;
+        return Result.OK;
     }
 
     @Override

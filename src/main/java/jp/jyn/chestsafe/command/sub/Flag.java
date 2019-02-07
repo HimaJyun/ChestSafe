@@ -1,11 +1,12 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.command.SubCommand;
+import jp.jyn.chestsafe.command.CommandLoader;
 import jp.jyn.chestsafe.config.config.MainConfig;
 import jp.jyn.chestsafe.config.config.MessageConfig;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
+import jp.jyn.jbukkitlib.command.SubCommand;
 import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
 import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import org.bukkit.block.Block;
@@ -26,12 +27,13 @@ public class Flag extends SubCommand {
 
     private final String availableFlags;
 
+    private final MessageConfig message;
     private final MainConfig config;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
     public Flag(MessageConfig message, MainConfig config, ProtectionRepository repository, PlayerAction action) {
-        super(message);
+        this.message = message;
         this.config = config;
         this.repository = repository;
         this.action = action;
@@ -43,31 +45,31 @@ public class Flag extends SubCommand {
     }
 
     @Override
-    protected boolean execCommand(Player sender, Queue<String> args) {
+    protected Result execCommand(Player sender, Queue<String> args) {
         String tmp = args.remove();
         Protection.Flag flag;
         try {
             flag = Protection.Flag.valueOf(tmp.toUpperCase(Locale.ENGLISH));
         } catch (IllegalArgumentException e) {
             sender.sendMessage(message.invalidArgument.toString("value", tmp));
-            return false;
+            return Result.ERROR;
         }
 
         // permission
         if (!sender.hasPermission("chestsafe.flag." + flag.name().toLowerCase(Locale.ENGLISH))) {
             sender.sendMessage(message.doNotHavePermission.toString());
-            return true;
+            return Result.OK;
         }
 
         Value value = parseValue(args.peek());
         if (value == null) {
             sender.sendMessage(message.invalidArgument.toString("value", args.peek()));
-            return false;
+            return Result.ERROR;
         }
 
         action.setAction(sender, b -> setFlag(sender, b, flag, value));
         sender.sendMessage(message.ready.toString());
-        return true;
+        return Result.OK;
     }
 
     private Value parseValue(String value) {
@@ -85,7 +87,7 @@ public class Flag extends SubCommand {
         }
 
         try {
-            if (str2Bool(value)) {
+            if (CommandLoader.str2Bool(value)) {
                 return Value.TRUE;
             } else {
                 return Value.FALSE;

@@ -1,7 +1,6 @@
 package jp.jyn.chestsafe;
 
-import jp.jyn.chestsafe.command.CommandRedirection;
-import jp.jyn.chestsafe.command.SubExecutor;
+import jp.jyn.chestsafe.command.CommandLoader;
 import jp.jyn.chestsafe.config.ConfigLoader;
 import jp.jyn.chestsafe.config.config.MainConfig;
 import jp.jyn.chestsafe.config.config.MessageConfig;
@@ -13,7 +12,6 @@ import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.chestsafe.util.ProtectionCleaner;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.Bukkit;
-import org.bukkit.command.PluginCommand;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -80,19 +78,8 @@ public class ChestSafe extends JavaPlugin {
         destructor.addFirst(() -> HandlerList.unregisterAll(this));
 
         // register commands
-        SubExecutor executor = new SubExecutor(main, message, this, registry, repository, action);
-        PluginCommand command = getCommand("chestsafe");
-        command.setExecutor(executor);
-        command.setTabCompleter(executor);
-        destructor.addFirst(() -> command.setExecutor(this));
-        destructor.addFirst(() -> command.setTabCompleter(this));
-
-        // redirect commands.
-        CommandRedirection redirection = new CommandRedirection(executor);
-        redirection.getRedirects().forEach(cmd -> getCommand(cmd).setExecutor(redirection));
-        redirection.getRedirects().forEach(cmd -> getCommand(cmd).setTabCompleter(redirection));
-        destructor.addFirst(() -> redirection.getRedirects().forEach(cmd -> getCommand(cmd).setExecutor(this)));
-        destructor.addFirst(() -> redirection.getRedirects().forEach(cmd -> getCommand(cmd).setTabCompleter(this)));
+        CommandLoader command = new CommandLoader(message, main, registry, repository, action);
+        destructor.addFirst(command::unloadCommand);
     }
 
     @Override
@@ -114,6 +101,11 @@ public class ChestSafe extends JavaPlugin {
         return repository;
     }
 
+    /**
+     * <p>Get ChestSafe instance</p>
+     *
+     * @return ChestSafe instance
+     */
     public static ChestSafe getInstance() {
         return instance;
     }

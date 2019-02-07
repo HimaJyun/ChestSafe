@@ -1,5 +1,6 @@
 package jp.jyn.chestsafe.command;
 
+import jp.jyn.jbukkitlib.command.SubExecutor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
