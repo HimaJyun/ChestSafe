@@ -128,7 +128,7 @@ public class MessageConfig {
          */
         public final TemplateParser removed;
 
-        public ActionBar(ConfigurationSection config) {
+        private ActionBar(ConfigurationSection config) {
             notice = parse(config.getString("notice"));
             denied = parse(config.getString("denied"));
             protected_ = parse(config.getString("protected"));

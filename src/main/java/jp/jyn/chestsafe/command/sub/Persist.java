@@ -1,6 +1,6 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.command.CommandLoader;
+import jp.jyn.chestsafe.command.CommandUtils;
 import jp.jyn.chestsafe.config.config.MessageConfig;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.jbukkitlib.command.SubCommand;
@@ -33,7 +33,7 @@ public class Persist extends SubCommand {
             persist = !persist;
         } else {
             try {
-                persist = CommandLoader.str2Bool(value);
+                persist = CommandUtils.str2Bool(value);
             } catch (IllegalArgumentException e) {
                 sender.sendMessage(message.invalidArgument.toString("value", value));
                 return Result.ERROR;

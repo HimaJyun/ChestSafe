@@ -18,6 +18,7 @@ public class CommandRedirection implements CommandExecutor, TabCompleter {
     private final Map<String, String[]> alias = new HashMap<>();
     private final SubExecutor executor;
 
+    @SuppressWarnings("SpellCheckingInspection")
     public CommandRedirection(SubExecutor executor) {
         this.executor = executor;
         alias.put("lock", array("private"));

@@ -11,7 +11,7 @@ import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Queue;
 import java.util.Set;
@@ -46,7 +46,7 @@ public class Info extends SubCommand {
         }
 
         // uuid -> name convert
-        Set<UUID> request = new LinkedHashSet<>(protection.getMembers());
+        Set<UUID> request = new HashSet<>(protection.getMembers());
         request.add(protection.getOwner());
         registry.getMultipleNameAsync(request).thenAcceptSync(map -> {
             // set variable

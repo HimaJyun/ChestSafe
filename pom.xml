@@ -124,7 +124,7 @@
                                     <artifactSet>
                                         <includes>
                                             <include>jp.jyn:JBukkitLib</include>
-                                            <include>org.slf4j:slf4j-jdk14</include>
+                                            <include>org.slf4j:*</include>
                                             <include>com.zaxxer:HikariCP</include>
                                         </includes>
                                     </artifactSet>

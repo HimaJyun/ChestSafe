@@ -1,6 +1,7 @@
 package jp.jyn.chestsafe.db.driver;
 
 import com.zaxxer.hikari.HikariDataSource;
+import jp.jyn.jbukkitlib.util.PackagePrivate;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,9 +18,9 @@ import java.util.Set;
  * Protection CRUD
  */
 public abstract class ProtectionDriver {
-    protected final HikariDataSource hikari;
+    private final HikariDataSource hikari;
 
-    public ProtectionDriver(HikariDataSource hikari) {
+    protected ProtectionDriver(HikariDataSource hikari) {
         this.hikari = hikari;
     }
 
@@ -120,7 +121,8 @@ public abstract class ProtectionDriver {
         public final boolean hasMember;
         public final boolean hasFlag;
 
-        public ProtectionInfo(int owner, int type, boolean hasMember, boolean hasFlag) {
+        @PackagePrivate
+        ProtectionInfo(int owner, int type, boolean hasMember, boolean hasFlag) {
             this.owner = owner;
             this.type = type;
             this.hasMember = hasMember;

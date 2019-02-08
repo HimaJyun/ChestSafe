@@ -19,7 +19,7 @@ import java.util.UUID;
 public abstract class IDDriver {
     private final HikariDataSource hikari;
 
-    public IDDriver(HikariDataSource hikari) {
+    protected IDDriver(HikariDataSource hikari) {
         this.hikari = hikari;
     }
 

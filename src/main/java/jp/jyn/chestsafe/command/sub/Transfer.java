@@ -1,11 +1,12 @@
 package jp.jyn.chestsafe.command.sub;
 
+import jp.jyn.chestsafe.command.CommandUtils;
 import jp.jyn.chestsafe.config.config.MessageConfig;
-import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.jbukkitlib.command.SubCommand;
 import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
+import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
@@ -48,19 +49,11 @@ public class Transfer extends SubCommand {
     }
 
     private void transferOwner(Player player, Block block, UUID newOwner) {
-        Protection protection = repository.get(block).orElse(null);
-        if (protection == null) {
-            player.sendMessage(message.notProtected.toString("block", block.getType()));
-            return;
-        }
-
-        if (!protection.isOwner(player) &&
-            !player.hasPermission("chestsafe.passthrough")) {
-            player.sendMessage(message.denied.toString(StringVariable.init().put("block", block.getType()).put("type", protection.getType())));
-            return;
-        }
-        protection.setOwner(newOwner);
-        player.sendMessage(message.transferSuccess.toString());
+        TemplateVariable variable = StringVariable.init();
+        CommandUtils.checkProtection(message, repository, player, block, variable).ifPresent(protection -> {
+            protection.setOwner(newOwner);
+            player.sendMessage(message.transferSuccess.toString(variable));
+        });
     }
 
     @Override

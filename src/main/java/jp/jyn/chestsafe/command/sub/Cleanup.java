@@ -16,15 +16,15 @@ import java.util.List;
 import java.util.Queue;
 
 public class Cleanup extends SubCommand {
-    private final MessageConfig message;
     private final MainConfig config;
+    private final MessageConfig message;
     private final ProtectionRepository repository;
 
     private ProtectionCleaner cleaner = null;
 
-    public Cleanup(MessageConfig message, MainConfig config, ProtectionRepository repository) {
-        this.message = message;
+    public Cleanup(MainConfig config, MessageConfig message, ProtectionRepository repository) {
         this.config = config;
+        this.message = message;
         this.repository = repository;
     }
 

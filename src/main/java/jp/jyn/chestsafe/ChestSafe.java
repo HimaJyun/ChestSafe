@@ -1,6 +1,18 @@
 package jp.jyn.chestsafe;
 
-import jp.jyn.chestsafe.command.CommandLoader;
+import jp.jyn.chestsafe.command.CommandRedirection;
+import jp.jyn.chestsafe.command.sub.Cleanup;
+import jp.jyn.chestsafe.command.sub.Flag;
+import jp.jyn.chestsafe.command.sub.Help;
+import jp.jyn.chestsafe.command.sub.Info;
+import jp.jyn.chestsafe.command.sub.Member;
+import jp.jyn.chestsafe.command.sub.Persist;
+import jp.jyn.chestsafe.command.sub.Private;
+import jp.jyn.chestsafe.command.sub.Public;
+import jp.jyn.chestsafe.command.sub.Reload;
+import jp.jyn.chestsafe.command.sub.Remove;
+import jp.jyn.chestsafe.command.sub.Transfer;
+import jp.jyn.chestsafe.command.sub.Version;
 import jp.jyn.chestsafe.config.ConfigLoader;
 import jp.jyn.chestsafe.config.config.MainConfig;
 import jp.jyn.chestsafe.config.config.MessageConfig;
@@ -10,8 +22,10 @@ import jp.jyn.chestsafe.listener.PlayerListener;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.chestsafe.util.ProtectionCleaner;
+import jp.jyn.jbukkitlib.command.SubExecutor;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.Bukkit;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -78,8 +92,40 @@ public class ChestSafe extends JavaPlugin {
         destructor.addFirst(() -> HandlerList.unregisterAll(this));
 
         // register commands
-        CommandLoader command = new CommandLoader(message, main, registry, repository, action);
-        destructor.addFirst(command::unloadCommand);
+        SubExecutor.Builder builder = SubExecutor.Builder.init()
+            .setDefaultCommand("help")
+            .putCommand("private", new Private(message, registry, repository, action))
+            .putCommand("public", new Public(message, repository, action))
+            .putCommand("flag", new Flag(main, message, repository, action))
+            .putCommand("remove", new Remove(message, repository, action))
+            .putCommand("info", new Info(message, registry, repository, action))
+            .putCommand("member", new Member(message, registry, repository, action))
+            .putCommand("transfer", new Transfer(message, registry, repository, action))
+            .putCommand("persist", new Persist(message, action))
+            .putCommand("cleanup", new Cleanup(main, message, repository))
+            .putCommand("reload", new Reload(message))
+            .putCommand("version", new Version(message));
+        Help help = new Help(message, builder.getSubCommands());
+        builder.setErrorExecutor(help).putCommand("help", help);
+
+        PluginCommand cmd = getCommand("chestsafe");
+        SubExecutor subExecutor = builder.register(cmd);
+        destructor.addFirst(() -> {
+            cmd.setTabCompleter(this);
+            cmd.setExecutor(this);
+        });
+
+        // register redirects
+        CommandRedirection redirection = new CommandRedirection(subExecutor);
+        for (String redirect : redirection.getRedirects()) {
+            PluginCommand c = getCommand(redirect);
+            cmd.setExecutor(redirection);
+            cmd.setTabCompleter(redirection);
+            destructor.addFirst(() -> {
+                c.setTabCompleter(this);
+                c.setExecutor(this);
+            });
+        }
     }
 
     @Override

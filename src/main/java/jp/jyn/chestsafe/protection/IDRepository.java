@@ -4,6 +4,7 @@ import jp.jyn.chestsafe.config.config.MainConfig;
 import jp.jyn.chestsafe.db.driver.IDDriver;
 import jp.jyn.chestsafe.db.driver.IDDriver.IntLocation;
 import jp.jyn.jbukkitlib.cache.CacheFactory;
+import jp.jyn.jbukkitlib.util.PackagePrivate;
 import org.bukkit.Location;
 import org.bukkit.World;
 
@@ -14,7 +15,8 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
 
-public class IDRepository {
+@PackagePrivate
+class IDRepository {
     private final IDDriver idDriver;
 
     private final Map<String, Integer> worldToIdCache = CacheFactory.Sized.INFINITY.create();

@@ -1,7 +1,7 @@
 package jp.jyn.chestsafe.command.sub;
 
+import jp.jyn.chestsafe.command.CommandUtils;
 import jp.jyn.chestsafe.config.config.MessageConfig;
-import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.jbukkitlib.command.SubCommand;
@@ -31,23 +31,11 @@ public class Remove extends SubCommand {
     }
 
     private void removeProtection(Player player, Block block) {
-        TemplateVariable variable = StringVariable.init().put("block", block.getType());
-
-        Protection protection = repository.get(block).orElse(null);
-        if (protection == null) {
-            player.sendMessage(message.notProtected.toString(variable));
-            return;
-        }
-        variable.put("type", protection.getType());
-
-        if (!protection.isOwner(player) &&
-            !player.hasPermission("chestsafe.passthrough")) {
-            player.sendMessage(message.denied.toString(variable));
-            return;
-        }
-
-        repository.remove(protection);
-        player.sendMessage(message.removed.toString(variable));
+        TemplateVariable variable = StringVariable.init();
+        CommandUtils.checkProtection(message, repository, player, block, variable).ifPresent(protection -> {
+            repository.remove(protection);
+            player.sendMessage(message.removed.toString(variable));
+        });
     }
 
     @Override

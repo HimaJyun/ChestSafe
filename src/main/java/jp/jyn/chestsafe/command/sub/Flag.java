@@ -1,6 +1,6 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.command.CommandLoader;
+import jp.jyn.chestsafe.command.CommandUtils;
 import jp.jyn.chestsafe.config.config.MainConfig;
 import jp.jyn.chestsafe.config.config.MessageConfig;
 import jp.jyn.chestsafe.protection.Protection;
@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,14 +28,14 @@ public class Flag extends SubCommand {
 
     private final String availableFlags;
 
-    private final MessageConfig message;
     private final MainConfig config;
+    private final MessageConfig message;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
-    public Flag(MessageConfig message, MainConfig config, ProtectionRepository repository, PlayerAction action) {
-        this.message = message;
+    public Flag(MainConfig config, MessageConfig message, ProtectionRepository repository, PlayerAction action) {
         this.config = config;
+        this.message = message;
         this.repository = repository;
         this.action = action;
 
@@ -87,7 +88,7 @@ public class Flag extends SubCommand {
         }
 
         try {
-            if (CommandLoader.str2Bool(value)) {
+            if (CommandUtils.str2Bool(value)) {
                 return Value.TRUE;
             } else {
                 return Value.FALSE;
@@ -97,21 +98,13 @@ public class Flag extends SubCommand {
     }
 
     private void setFlag(Player player, Block block, Protection.Flag flag, Value value) {
-        TemplateVariable variable = StringVariable.init().put("block", block.getType());
-
-        Protection protection = repository.get(block).orElse(null);
-        if (protection == null) {
-            player.sendMessage(message.notProtected.toString(variable));
+        TemplateVariable variable = StringVariable.init();
+        Optional<Protection> optional = CommandUtils.checkProtection(message, repository, player, block, variable);
+        if (!optional.isPresent()) {
             return;
         }
 
-        if (!protection.isOwner(player) &&
-            !player.hasPermission("chestsafe.passthrough")) {
-            variable.put("type", protection.getType());
-            player.sendMessage(message.denied.toString(variable));
-            return;
-        }
-
+        Protection protection = optional.get();
         boolean defaultValue = config.protectable.get(block.getType()).flag.get(flag); // get should not always be null
         boolean newValue = defaultValue;
         switch (value) {
@@ -137,9 +130,7 @@ public class Flag extends SubCommand {
         }
 
         // send message
-        variable.clear()
-            .put("flag", flag.name().toLowerCase(Locale.ENGLISH))
-            .put("value", newValue);
+        variable.put("value", newValue).put("flag", flag.name().toLowerCase(Locale.ENGLISH));
         player.sendMessage(message.flagSet.toString(variable));
     }
 

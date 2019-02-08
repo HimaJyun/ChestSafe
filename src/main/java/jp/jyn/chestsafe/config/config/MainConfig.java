@@ -8,6 +8,7 @@ import jp.jyn.jbukkitlib.cache.CacheFactory;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.util.Arrays;
@@ -83,17 +84,20 @@ public class MainConfig {
             String tmpType = config.getString("type", "").toLowerCase(Locale.ENGLISH);
             switch (tmpType) {
                 case "sqlite":
-                    File dbfile = new File(ChestSafe.getInstance().getDataFolder(), config.getString("sqlite.file", "chestsafe.db"));
-                    dbfile.getParentFile().mkdirs();
-                    url = "jdbc:sqlite:" + dbfile.getPath();
+                    Plugin plugin = ChestSafe.getInstance();
+                    File db = new File(plugin.getDataFolder(), config.getString("sqlite.file", "chestsafe.db"));
+                    //noinspection ResultOfMethodCallIgnored
+                    db.getParentFile().mkdirs();
+                    url = "jdbc:sqlite:" + db.getPath();
                     init = "PRAGMA `foreign_keys`=`ON`"; // Enable FOREIGN KEY
                     break;
                 case "mysql":
-                    url = "jdbc:mysql://"
-                        + config.getString("mysql.host", "localhost:3306")
-                        + "/"
-                        + config.getString("mysql.name", "chestsafe");
-                    init = config.getString(tmpType + ".init", "/* ChestSafe */SELECT 1");
+                    url = String.format(
+                        "jdbc:mysql://%s/%s",
+                        config.getString("mysql.host", "localhost:3306"),
+                        config.getString("mysql.name", "chestsafe")
+                    );
+                    init = config.getString("mysql.init", "/* ChestSafe */SELECT 1");
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid value: Database.Type(config.yml)");
@@ -102,7 +106,7 @@ public class MainConfig {
             username = config.getString(tmpType + ".username");
             password = config.getString(tmpType + ".password");
 
-            String tmpKey = tmpType + ".propaties";
+            String tmpKey = tmpType + ".properties";
             if (config.contains(tmpKey)) {
                 for (String key : config.getConfigurationSection(tmpKey).getKeys(false)) {
                     properties.put(key, config.getString(tmpKey + "." + key));
@@ -130,6 +134,7 @@ public class MainConfig {
     }
 
     public static class ProtectionConfig {
+        @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
         public final Optional<Protection.Type> auto;
         public final Map<Protection.Flag, Boolean> flag = new EnumMap<>(Protection.Flag.class);
 

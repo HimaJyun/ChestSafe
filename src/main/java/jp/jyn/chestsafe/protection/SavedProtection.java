@@ -2,6 +2,7 @@ package jp.jyn.chestsafe.protection;
 
 import jp.jyn.chestsafe.db.driver.ProtectionDriver;
 import jp.jyn.jbukkitlib.util.Lazy;
+import jp.jyn.jbukkitlib.util.PackagePrivate;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -26,7 +27,8 @@ public class SavedProtection implements Protection {
     private final Lazy<Set<UUID>> members;
     private final Lazy<Map<Flag, Boolean>> flags;
 
-    public SavedProtection(int id, ProtectionDriver protectionDriver, IDRepository idRepository, Protection protection) {
+    @PackagePrivate
+    SavedProtection(int id, ProtectionDriver protectionDriver, IDRepository idRepository, Protection protection) {
         this.id = id;
         this.protectionDriver = protectionDriver;
         this.idRepository = idRepository;
@@ -40,7 +42,8 @@ public class SavedProtection implements Protection {
         protection.getFlags().forEach((key, value) -> flags.get().put(key, value));
     }
 
-    public SavedProtection(int id, ProtectionDriver protectionDriver, IDRepository idRepository, ProtectionDriver.ProtectionInfo info) {
+    @PackagePrivate
+    SavedProtection(int id, ProtectionDriver protectionDriver, IDRepository idRepository, ProtectionDriver.ProtectionInfo info) {
         this.id = id;
         this.protectionDriver = protectionDriver;
         this.idRepository = idRepository;
@@ -237,7 +240,7 @@ public class SavedProtection implements Protection {
 
     @Override
     public Set<UUID> getMembers() {
-        return members.get();
+        return Collections.unmodifiableSet(members.get());
     }
 
     @Override

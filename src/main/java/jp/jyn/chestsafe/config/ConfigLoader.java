@@ -19,7 +19,7 @@ public class ConfigLoader {
         this.messageLoader = new YamlLoader(plugin, "message.yml");
     }
 
-    public ConfigLoader reloadConfig() {
+    public void reloadConfig() {
         mainLoader.saveDefaultConfig();
         messageLoader.saveDefaultConfig();
         if (mainConfig != null || messageConfig != null) {
@@ -29,8 +29,6 @@ public class ConfigLoader {
 
         mainConfig = new MainConfig(mainLoader.getConfig());
         messageConfig = new MessageConfig(messageLoader.getConfig());
-
-        return this;
     }
 
     public MainConfig getMainConfig() {
