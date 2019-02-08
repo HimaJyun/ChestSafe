@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class MainConfig {
 
     public final boolean actionBar;
+    public final boolean versionCheck;
 
     public final Map<Material, ProtectionConfig> protectable = new EnumMap<>(Material.class);
 
@@ -33,6 +34,8 @@ public class MainConfig {
 
     public MainConfig(FileConfiguration config) {
         actionBar = config.getBoolean("actionBar");
+        versionCheck = config.getBoolean("versionCheck");
+
         ProtectionConfig defaultValue = new ProtectionConfig(config.getConfigurationSection("default"));
         for (Protection.Flag flag : Protection.Flag.values()) {
             // Initialize unset flags

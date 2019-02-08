@@ -6,6 +6,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class MessageConfig {
@@ -69,7 +70,12 @@ public class MessageConfig {
     /**
      * type,owner,uuid,members,flags
      */
-    public final Iterable<TemplateParser> info;
+    public final List<TemplateParser> info;
+
+    /**
+     * old,new,url
+     */
+    public final List<TemplateParser> newVersion;
 
     public final ActionBar actionbar;
     public final CleanupMessage cleanup;
@@ -85,25 +91,22 @@ public class MessageConfig {
         denied = parse(config, "denied");
         protected_ = parse(config, "protected");
         removed = parse(config, "removed");
-
         ready = parse(config, "ready");
+
         notProtected = parse(config, "notProtected");
         notProtectable = parse(config, "notProtectable");
         alreadyProtected = parse(config, "alreadyProtected");
 
         persistEnabled = parse(config, "persistEnabled");
         persistDisabled = parse(config, "persistDisabled");
-
         flagSet = parse(config, "flagSet");
-
-        info = config.getStringList("info").stream().map(MessageConfig::parse).collect(Collectors.toList());
-
         memberChanged = parse(config, "memberChanged");
-
         transferSuccess = parse(config, "transferSuccess");
         transferWarning = parse(config, "transferWarning");
-
         reloaded = parse(config, "reloaded");
+
+        info = config.getStringList("info").stream().map(MessageConfig::parse).collect(Collectors.toList());
+        newVersion = config.getStringList("newVersion").stream().map(MessageConfig::parse).collect(Collectors.toList());
 
         actionbar = new ActionBar(config);
         cleanup = new CleanupMessage(config.getConfigurationSection("cleanup"));

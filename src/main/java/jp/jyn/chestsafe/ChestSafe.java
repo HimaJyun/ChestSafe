@@ -22,6 +22,7 @@ import jp.jyn.chestsafe.listener.PlayerListener;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.chestsafe.util.ProtectionCleaner;
+import jp.jyn.chestsafe.util.VersionChecker;
 import jp.jyn.jbukkitlib.command.SubExecutor;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.Bukkit;
@@ -29,6 +30,7 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -56,6 +58,10 @@ public class ChestSafe extends JavaPlugin {
         MessageConfig message = config.getMessageConfig();
 
         UUIDRegistry registry = UUIDRegistry.getSharedCacheRegistry(this);
+
+        VersionChecker checker = new VersionChecker(main.versionCheck, message);
+        BukkitTask task = getServer().getScheduler().runTaskLater(this, () -> checker.check(Bukkit.getConsoleSender()), 20 * 30);
+        destructor.addFirst(task::cancel);
 
         // connect db
         DBConnector dbConnector = new DBConnector(main.database);
@@ -87,7 +93,7 @@ public class ChestSafe extends JavaPlugin {
 
         // register events
         PluginManager manager = getServer().getPluginManager();
-        manager.registerEvents(new PlayerListener(main, message, registry, repository, action), this);
+        manager.registerEvents(new PlayerListener(main, message, registry, checker, repository, action), this);
         manager.registerEvents(new BlockListener(main, repository), this);
         destructor.addFirst(() -> HandlerList.unregisterAll(this));
 
@@ -104,7 +110,7 @@ public class ChestSafe extends JavaPlugin {
             .putCommand("persist", new Persist(message, action))
             .putCommand("cleanup", new Cleanup(main, message, repository))
             .putCommand("reload", new Reload(message))
-            .putCommand("version", new Version(message));
+            .putCommand("version", new Version(message, checker));
         Help help = new Help(message, builder.getSubCommands());
         builder.setErrorExecutor(help).putCommand("help", help);
 

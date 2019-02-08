@@ -6,6 +6,7 @@ import jp.jyn.chestsafe.config.config.MessageConfig;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
+import jp.jyn.chestsafe.util.VersionChecker;
 import jp.jyn.chestsafe.util.normalizer.ChestNormalizer;
 import jp.jyn.jbukkitlib.config.parser.template.TemplateParser;
 import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
@@ -26,6 +27,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
@@ -38,6 +40,7 @@ public class PlayerListener implements Listener {
     private final BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
 
     private final UUIDRegistry registry;
+    private final VersionChecker checker;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
@@ -51,10 +54,13 @@ public class PlayerListener implements Listener {
         void send(Player player, String message);
     }
 
-    public PlayerListener(MainConfig config, MessageConfig message, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
+    public PlayerListener(MainConfig config, MessageConfig message,
+                          UUIDRegistry registry, VersionChecker checker,
+                          ProtectionRepository repository, PlayerAction action) {
         this.plugin = ChestSafe.getInstance();
         this.protectable = config.protectable;
         this.registry = registry;
+        this.checker = checker;
         this.repository = repository;
         this.action = action;
 
@@ -82,6 +88,14 @@ public class PlayerListener implements Listener {
                     p.sendMessage(m);
                 }
             };
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerJoin(PlayerJoinEvent e) {
+        Player player = e.getPlayer();
+        if (player.hasPermission("chestsafe.version")) {
+            checker.check(player);
         }
     }
 

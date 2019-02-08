@@ -1,5 +1,7 @@
 # Use actionbar message.
 actionBar: true
+# Check new version.
+versionCheck: true
 
 default:
     auto: false

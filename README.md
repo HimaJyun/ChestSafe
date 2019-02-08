@@ -33,7 +33,7 @@ Please use [ChestSafe-Converter](https://github.com/HimaJyun/Jecon/ChestSafe-Con
 |chestsafe persist|Perform operations permanently.|chestsafe.persist|ALL|
 |/chestsafe cleanup|Delete protection of nonexistent blocks.|chestsafe.cleanup|OP|
 |/chestsafe reload|Reload config.|chestsafe.reload|OP|
-|/chestsafe version|Show version.|chestsafe.version|OP|
+|/chestsafe version|Show version and check new version|chestsafe.version|OP|
 |/chestsafe help|Show helps.|N/A|ALL|
 
 ## Flags
