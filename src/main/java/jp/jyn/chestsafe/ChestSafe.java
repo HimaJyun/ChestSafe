@@ -136,8 +136,6 @@ public class ChestSafe extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        repository = null;
-
         while (!destructor.isEmpty()) {
             destructor.removeFirst().run();
         }
