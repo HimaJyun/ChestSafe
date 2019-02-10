@@ -1,7 +1,7 @@
 package jp.jyn.chestsafe.command.sub;
 
 import jp.jyn.chestsafe.ChestSafe;
-import jp.jyn.chestsafe.config.config.MessageConfig;
+import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.jbukkitlib.command.SubCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;

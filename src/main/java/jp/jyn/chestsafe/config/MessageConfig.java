@@ -1,7 +1,8 @@
-package jp.jyn.chestsafe.config.config;
+package jp.jyn.chestsafe.config;
 
 import jp.jyn.jbukkitlib.config.parser.template.StringParser;
 import jp.jyn.jbukkitlib.config.parser.template.TemplateParser;
+import jp.jyn.jbukkitlib.util.PackagePrivate;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -81,7 +82,8 @@ public class MessageConfig {
     public final CleanupMessage cleanup;
     public final HelpMessage help;
 
-    public MessageConfig(FileConfiguration config) {
+    @PackagePrivate
+    MessageConfig(FileConfiguration config) {
         doNotHavePermission = parse(config, "doNotHavePermission");
         missingArgument = parse(config, "missingArgument");
         invalidArgument = parse(config, "invalidArgument");

@@ -1,6 +1,6 @@
 package jp.jyn.chestsafe.protection;
 
-import jp.jyn.chestsafe.config.config.MainConfig;
+import jp.jyn.chestsafe.config.MainConfig;
 import jp.jyn.chestsafe.db.driver.IDDriver;
 import jp.jyn.chestsafe.db.driver.IDDriver.IntLocation;
 import jp.jyn.jbukkitlib.cache.CacheFactory;

@@ -1,6 +1,6 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.config.config.MessageConfig;
+import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.jbukkitlib.command.ErrorExecutor;
 import jp.jyn.jbukkitlib.command.SubCommand;
 import org.bukkit.ChatColor;

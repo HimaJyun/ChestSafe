@@ -1,10 +1,11 @@
-package jp.jyn.chestsafe.config.config;
+package jp.jyn.chestsafe.config;
 
 import jp.jyn.chestsafe.ChestSafe;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.util.normalizer.BedNormalizer;
 import jp.jyn.chestsafe.util.normalizer.DoorNormalizer;
 import jp.jyn.jbukkitlib.cache.CacheFactory;
+import jp.jyn.jbukkitlib.util.PackagePrivate;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -32,7 +33,8 @@ public class MainConfig {
     public final DatabaseConfig database;
     public final CacheConfig cache;
 
-    public MainConfig(FileConfiguration config) {
+    @PackagePrivate
+    MainConfig(FileConfiguration config) {
         actionBar = config.getBoolean("actionBar");
         versionCheck = config.getBoolean("versionCheck");
 

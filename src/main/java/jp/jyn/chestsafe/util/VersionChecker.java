@@ -1,7 +1,7 @@
 package jp.jyn.chestsafe.util;
 
 import jp.jyn.chestsafe.ChestSafe;
-import jp.jyn.chestsafe.config.config.MessageConfig;
+import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
 import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import jp.jyn.jbukkitlib.util.updater.GitHubReleaseChecker;

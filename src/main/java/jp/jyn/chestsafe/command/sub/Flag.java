@@ -1,8 +1,8 @@
 package jp.jyn.chestsafe.command.sub;
 
 import jp.jyn.chestsafe.command.CommandUtils;
-import jp.jyn.chestsafe.config.config.MainConfig;
-import jp.jyn.chestsafe.config.config.MessageConfig;
+import jp.jyn.chestsafe.config.MainConfig;
+import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;

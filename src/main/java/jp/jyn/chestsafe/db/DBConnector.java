@@ -3,7 +3,7 @@ package jp.jyn.chestsafe.db;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import jp.jyn.chestsafe.ChestSafe;
-import jp.jyn.chestsafe.config.config.MainConfig;
+import jp.jyn.chestsafe.config.MainConfig;
 import jp.jyn.chestsafe.db.driver.IDDriver;
 import jp.jyn.chestsafe.db.driver.ProtectionDriver;
 import jp.jyn.chestsafe.db.driver.mysql.IDMysql;

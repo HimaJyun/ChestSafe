@@ -1,6 +1,6 @@
 package jp.jyn.chestsafe.listener;
 
-import jp.jyn.chestsafe.config.config.MainConfig;
+import jp.jyn.chestsafe.config.MainConfig;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import org.bukkit.Material;

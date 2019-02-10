@@ -1,6 +1,6 @@
 package jp.jyn.chestsafe.command;
 
-import jp.jyn.chestsafe.config.config.MessageConfig;
+import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;

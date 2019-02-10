@@ -1,8 +1,6 @@
 package jp.jyn.chestsafe.config;
 
 import jp.jyn.chestsafe.ChestSafe;
-import jp.jyn.chestsafe.config.config.MainConfig;
-import jp.jyn.chestsafe.config.config.MessageConfig;
 import jp.jyn.jbukkitlib.config.YamlLoader;
 import org.bukkit.plugin.Plugin;
 
