@@ -6,8 +6,6 @@ import jp.jyn.jbukkitlib.command.SubCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
@@ -96,7 +94,7 @@ public class Help extends SubCommand implements ErrorExecutor {
             .stream()
             .map(SubCommand::getHelp)
             .filter(Objects::nonNull)
-            .map(this::simpleHelp)
+            .map(help -> help.usage + " - " + help.description)
             .toArray(String[]::new);
 
         sender.sendMessage(MessageConfig.HEADER);
@@ -105,26 +103,19 @@ public class Help extends SubCommand implements ErrorExecutor {
 
     private void sendSubDetails(CommandSender sender, SubCommand cmd) {
         CommandHelp help = cmd.getHelp();
-        if (help != null) {
-            sender.sendMessage(MessageConfig.HEADER);
-            sender.sendMessage(detailsHelp(help));
+        if (help == null) {
+            return;
         }
-    }
 
-    private String simpleHelp(CommandHelp help) {
-        return help.usage + " - " + help.description;
-    }
-
-    private String[] detailsHelp(CommandHelp help) {
-        List<String> tmp = new ArrayList<>();
-        tmp.add(help.usage);
-        tmp.add(help.description);
+        sender.sendMessage(MessageConfig.HEADER);
+        sender.sendMessage(help.usage);
+        sender.sendMessage(help.description);
         if (help.example.length != 0) {
-            tmp.add("");
-            tmp.add(message.help.example.toString());
-            tmp.addAll(Arrays.asList(help.example));
+            sender.sendMessage("");
+            sender.sendMessage(message.help.example.toString());
+            for (String ex : help.example) {
+                sender.sendMessage(ex);
+            }
         }
-
-        return tmp.toArray(new String[0]);
     }
 }

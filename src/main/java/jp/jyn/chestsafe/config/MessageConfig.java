@@ -7,6 +7,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -107,8 +108,14 @@ public class MessageConfig {
         transferWarning = parse(config, "transferWarning");
         reloaded = parse(config, "reloaded");
 
-        info = config.getStringList("info").stream().map(MessageConfig::parse).collect(Collectors.toList());
-        newVersion = config.getStringList("newVersion").stream().map(MessageConfig::parse).collect(Collectors.toList());
+        info = config.getStringList("info")
+            .stream()
+            .map(MessageConfig::parse)
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+        newVersion = config.getStringList("newVersion")
+            .stream()
+            .map(MessageConfig::parse)
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
 
         actionbar = new ActionBar(config);
         cleanup = new CleanupMessage(config.getConfigurationSection("cleanup"));

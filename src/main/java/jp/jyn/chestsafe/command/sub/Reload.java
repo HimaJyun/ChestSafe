@@ -23,10 +23,10 @@ public class Reload extends SubCommand {
     protected Result execCommand(CommandSender sender, Queue<String> args) {
         final Plugin plugin = ChestSafe.getInstance();
         // reload
-        plugin.getServer().getPluginManager().callEvent(new PluginEnableEvent(plugin));
+        plugin.getServer().getPluginManager().callEvent(new PluginDisableEvent(plugin));
         plugin.onDisable();
         plugin.onEnable();
-        plugin.getServer().getPluginManager().callEvent(new PluginDisableEvent(plugin));
+        plugin.getServer().getPluginManager().callEvent(new PluginEnableEvent(plugin));
 
         sender.sendMessage(message.reloaded.toString());
         if (sender instanceof Player) {
