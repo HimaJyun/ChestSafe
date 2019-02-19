@@ -114,24 +114,23 @@ public class ChestSafe extends JavaPlugin {
         Help help = new Help(message, builder.getSubCommands());
         builder.setErrorExecutor(help).putCommand("help", help);
 
-        PluginCommand cmd = getCommand("chestsafe");
-        SubExecutor subExecutor = builder.register(cmd);
+        PluginCommand mainCommand = getCommand("chestsafe");
+        SubExecutor subExecutor = builder.register(mainCommand);
         destructor.addFirst(() -> {
-            cmd.setTabCompleter(this);
-            cmd.setExecutor(this);
+            mainCommand.setTabCompleter(this);
+            mainCommand.setExecutor(this);
         });
 
         // register redirects
         CommandRedirection redirection = new CommandRedirection(subExecutor);
-        for (String redirect : redirection.getRedirects()) {
-            PluginCommand c = getCommand(redirect);
+        redirection.getRedirects().stream().map(this::getCommand).forEach(cmd -> {
             cmd.setExecutor(redirection);
             cmd.setTabCompleter(redirection);
             destructor.addFirst(() -> {
-                c.setTabCompleter(this);
-                c.setExecutor(this);
+                cmd.setTabCompleter(this);
+                cmd.setExecutor(this);
             });
-        }
+        });
     }
 
     @Override

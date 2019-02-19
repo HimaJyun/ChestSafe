@@ -86,6 +86,7 @@ Please use [ChestSafe-Converter](https://github.com/HimaJyun/Jecon/ChestSafe-Con
         <groupId>jp.jyn</groupId>
         <artifactId>ChestSafe</artifactId>
         <version>1.1.0</version>
+        <scope>provided</scope>
     </dependency>
 </dependencies>
 ```
