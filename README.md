@@ -1,5 +1,6 @@
 # ChestSafe
-Chest protection plugin for Bukkit/Spigot.
+Chest protection plugin for Bukkit/Spigot.  
+[日本語解説](https://minecraft.jyn.jp/bukkit/plugin/chestsafe/)
 
 ## Feature
 - UUID Ready
@@ -17,7 +18,7 @@ Chest protection plugin for Bukkit/Spigot.
 5. reload.
 
 ## Import from other plugin.
-Please use [ChestSafe-Converter](https://github.com/HimaJyun/Jecon/ChestSafe-Converter).
+Please use [ChestSafe-Converter](https://github.com/HimaJyun/ChestSafe-Converter).
 
 # Command/Permission
 ## Commands
@@ -30,7 +31,7 @@ Please use [ChestSafe-Converter](https://github.com/HimaJyun/Jecon/ChestSafe-Con
 |/chestsafe info|Display protection information.|chestsafe.info|ALL|
 |/chestsafe member|Add/Remove protection members.|chestsafe.member|ALL|
 |/chestsafe transfer|Change protection owner.|chestsafe.transfer|ALL|
-|chestsafe persist|Perform operations permanently.|chestsafe.persist|ALL|
+|/chestsafe persist|Perform operations permanently.|chestsafe.persist|ALL|
 |/chestsafe cleanup|Delete protection of nonexistent blocks.|chestsafe.cleanup|OP|
 |/chestsafe reload|Reload config.|chestsafe.reload|OP|
 |/chestsafe version|Show version and check new version|chestsafe.version|OP|
