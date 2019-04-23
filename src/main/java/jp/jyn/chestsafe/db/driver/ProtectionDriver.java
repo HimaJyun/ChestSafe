@@ -1,6 +1,7 @@
 package jp.jyn.chestsafe.db.driver;
 
 import com.zaxxer.hikari.HikariDataSource;
+import jp.jyn.jbukkitlib.util.PackagePrivate;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,15 +18,15 @@ import java.util.Set;
  * Protection CRUD
  */
 public abstract class ProtectionDriver {
-    protected final HikariDataSource hikari;
+    private final HikariDataSource hikari;
 
-    public ProtectionDriver(HikariDataSource hikari) {
+    protected ProtectionDriver(HikariDataSource hikari) {
         this.hikari = hikari;
     }
 
-    // =============================== protection_info ===============================
-    // | id(int) | owner(int) | type(byte) | has_member(boolean) | has_flag(boolean) |
-    // ===============================================================================
+    // ============================== protection_info ===============================
+    // | id(int) | owner(int) | type(int) | has_member(boolean) | has_flag(boolean) |
+    // ==============================================================================
 
     /**
      * Get protection
@@ -43,7 +44,7 @@ public abstract class ProtectionDriver {
                 if (result.next()) {
                     return Optional.of(new ProtectionInfo(
                         result.getInt("owner"),
-                        result.getByte("type"),
+                        result.getInt("type"),
                         result.getBoolean("has_member"),
                         result.getBoolean("has_flag")
                     ));
@@ -56,8 +57,8 @@ public abstract class ProtectionDriver {
     }
 
     /**
-     * Set protection
-     * If you know that protection exists, use "updateProtection" (you can run with less SQL)
+     * <p>Set protection</p>
+     * <p>Note: This should be so as not to violate uniqueness.</p>
      *
      * @param id        Protection id
      * @param owner     Protection owner id
@@ -65,11 +66,25 @@ public abstract class ProtectionDriver {
      * @param hasMember Protection has members
      * @param hasFlag   Protection has flag
      */
-    public abstract void setProtection(int id, int owner, byte type, boolean hasMember, boolean hasFlag);
+    public void setProtection(int id, int owner, int type, boolean hasMember, boolean hasFlag) {
+        try (Connection connection = hikari.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                 "INSERT INTO `protection_info` (`id`,`owner`,`type`,`has_member`,`has_flag`) VALUES (?,?,?,?,?)"
+             )) {
+            statement.setInt(1, id);
+            statement.setInt(2, owner);
+            statement.setByte(3, (byte) type);
+            statement.setBoolean(4, hasMember);
+            statement.setBoolean(5, hasFlag);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
-     * Set protection
-     * If you know that protection exists, use "updateProtection" (you can run with less SQL)
+     * <p>Set protection</p>
+     * <p>Note: This should be so as not to violate uniqueness.</p>
      *
      * @param id         Protection id
      * @param protection Protection info
@@ -78,7 +93,7 @@ public abstract class ProtectionDriver {
         setProtection(id, protection.owner, protection.type, protection.hasMember, protection.hasFlag);
     }
 
-    public void updateProtection(int id, int owner, byte type, boolean hasMember, boolean hasFlag) {
+    public void updateProtection(int id, int owner, int type, boolean hasMember, boolean hasFlag) {
         try (Connection connection = hikari.getConnection();
              PreparedStatement statement = connection.prepareStatement(
                  "UPDATE `protection_info` " +
@@ -86,7 +101,7 @@ public abstract class ProtectionDriver {
                      "WHERE `id`=?"
              )) {
             statement.setInt(1, owner);
-            statement.setByte(2, type);
+            statement.setByte(2, (byte) type);
             statement.setBoolean(3, hasMember);
             statement.setBoolean(4, hasFlag);
             statement.setInt(5, id);
@@ -102,11 +117,12 @@ public abstract class ProtectionDriver {
 
     public static class ProtectionInfo {
         public final int owner;
-        public final byte type;
+        public final int type;
         public final boolean hasMember;
         public final boolean hasFlag;
 
-        public ProtectionInfo(int owner, byte type, boolean hasMember, boolean hasFlag) {
+        @PackagePrivate
+        ProtectionInfo(int owner, int type, boolean hasMember, boolean hasFlag) {
             this.owner = owner;
             this.type = type;
             this.hasMember = hasMember;
@@ -228,11 +244,11 @@ public abstract class ProtectionDriver {
         }
     }
 
-    // ============ protection_flag ============
-    // | id(int) | flag(byte) | value(boolean) |
-    // =========================================
-    public Map<Byte, Boolean> getFlags(int id) {
-        Map<Byte, Boolean> map = new HashMap<>();
+    // =========== protection_flag ============
+    // | id(int) | flag(int) | value(boolean) |
+    // ========================================
+    public Map<Integer, Boolean> getFlags(int id) {
+        Map<Integer, Boolean> map = new HashMap<>();
 
         try (Connection connection = hikari.getConnection();
              PreparedStatement statement = connection.prepareStatement(
@@ -241,7 +257,7 @@ public abstract class ProtectionDriver {
             statement.setInt(1, id);
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
-                    map.put(result.getByte("flag"), result.getBoolean("value"));
+                    map.put(result.getInt("flag"), result.getBoolean("value"));
                 }
             }
         } catch (SQLException e) {
@@ -262,13 +278,13 @@ public abstract class ProtectionDriver {
         }
     }
 
-    public void setFlag(int id, byte flag, boolean value) {
+    public void setFlag(int id, int flag, boolean value) {
         try (Connection connection = hikari.getConnection();
              PreparedStatement statement = connection.prepareStatement(
                  "INSERT INTO `protection_flag` (`id`,`flag`,`value`) VALUES (?,?,?)"
              )) {
             statement.setInt(1, id);
-            statement.setByte(2, flag);
+            statement.setByte(2, (byte) flag);
             statement.setBoolean(3, value);
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -276,13 +292,13 @@ public abstract class ProtectionDriver {
         }
     }
 
-    public void removeFlag(int id, byte flag) {
+    public void removeFlag(int id, int flag) {
         try (Connection connection = hikari.getConnection();
              PreparedStatement statement = connection.prepareStatement(
                  "DELETE FROM `protection_flag` WHERE `id`=? AND `flag`=?"
              )) {
             statement.setInt(1, id);
-            statement.setByte(2, flag);
+            statement.setByte(2, (byte) flag);
             statement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -292,8 +308,8 @@ public abstract class ProtectionDriver {
     // Bulk operation
 
     /**
-     * Add new protection.<br>
-     * Note: This should be so as not to violate uniqueness.
+     * <p>Add new protection.</p>
+     * <p>Note: This should be so as not to violate uniqueness.</p>
      *
      * @param id      protection id
      * @param owner   protection owner
@@ -301,7 +317,7 @@ public abstract class ProtectionDriver {
      * @param members protection member
      * @param flags   protection flags
      */
-    public void add(int id, int owner, byte type, int[] members, Collection<Map.Entry<Byte, Boolean>> flags) {
+    public void add(int id, int owner, int type, int[] members, Map<Integer, Boolean> flags) {
         try (Connection connection = hikari.getConnection()) {
             try {
                 connection.setAutoCommit(false);
@@ -310,7 +326,7 @@ public abstract class ProtectionDriver {
                 )) {
                     statement.setInt(1, id);
                     statement.setInt(2, owner);
-                    statement.setByte(3, type);
+                    statement.setByte(3, (byte) type);
                     statement.setBoolean(4, members.length != 0);
                     statement.setBoolean(5, flags.size() != 0);
                     statement.executeUpdate();
@@ -328,13 +344,13 @@ public abstract class ProtectionDriver {
                     }
                 }
 
-                if (flags.size() != 0) {
+                if (!flags.isEmpty()) {
                     try (PreparedStatement statement = connection.prepareStatement(
                         "INSERT INTO `protection_flag` (`id`,`flag`,`value`) VALUES (?,?,?)"
                     )) {
                         statement.setInt(1, id);
-                        for (Map.Entry<Byte, Boolean> flag : flags) {
-                            statement.setByte(2, flag.getKey());
+                        for (Map.Entry<Integer, Boolean> flag : flags.entrySet()) {
+                            statement.setByte(2, flag.getKey().byteValue());
                             statement.setBoolean(3, flag.getValue());
                             statement.executeUpdate();
                         }

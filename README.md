@@ -1,5 +1,6 @@
 # ChestSafe
-Chest protection plugin for Bukkit/Spigot.
+Chest protection plugin for Bukkit/Spigot.  
+[日本語解説](https://minecraft.jyn.jp/bukkit/plugin/chestsafe/)
 
 ## Feature
 - UUID Ready
@@ -17,23 +18,23 @@ Chest protection plugin for Bukkit/Spigot.
 5. reload.
 
 ## Import from other plugin.
-Please use [ChestSafe-Converter](https://github.com/HimaJyun/Jecon/ChestSafe-Converter).
+Please use [ChestSafe-Converter](https://github.com/HimaJyun/ChestSafe-Converter).
 
 # Command/Permission
 ## Commands
 |Command|Description|Permission|Default|
 |:------|:----------|:----------|:-----|
 |/chestsafe private|Create private protection.|chestsafe.create.private|ALL|
-|/chestsafe public|Create private protection.|chestsafe.create.public|ALL|
-|/chestsafe flag|Specify a flog for protection.|chestsafe.flag.*|ALL|
+|/chestsafe public|Create public protection.|chestsafe.create.public|ALL|
+|/chestsafe flag|Specify a flag for protection.|chestsafe.flag.*|ALL|
 |/chestsafe remove|Remove protection.|chestsafe.remove|ALL|
 |/chestsafe info|Display protection information.|chestsafe.info|ALL|
 |/chestsafe member|Add/Remove protection members.|chestsafe.member|ALL|
 |/chestsafe transfer|Change protection owner.|chestsafe.transfer|ALL|
-|chestsafe persist|Perform operations permanently.|chestsafe.persist|ALL|
+|/chestsafe persist|Perform operations permanently.|chestsafe.persist|ALL|
 |/chestsafe cleanup|Delete protection of nonexistent blocks.|chestsafe.cleanup|OP|
 |/chestsafe reload|Reload config.|chestsafe.reload|OP|
-|/chestsafe version|Show version.|chestsafe.version|OP|
+|/chestsafe version|Show version and check new version|chestsafe.version|OP|
 |/chestsafe help|Show helps.|N/A|ALL|
 
 ## Flags
@@ -77,7 +78,7 @@ Please use [ChestSafe-Converter](https://github.com/HimaJyun/Jecon/ChestSafe-Con
 <repositories>
     <repository>
         <id>himajyun-repo</id>
-        <url>https://raw.github.com/HimaJyun/mvn-repo/master/</url>
+        <url>https://himajyun.github.io/mvn-repo/</url>
     </repository>
 </repositories>
 
@@ -85,7 +86,8 @@ Please use [ChestSafe-Converter](https://github.com/HimaJyun/Jecon/ChestSafe-Con
     <dependency>
         <groupId>jp.jyn</groupId>
         <artifactId>ChestSafe</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
+        <scope>provided</scope>
     </dependency>
 </dependencies>
 ```

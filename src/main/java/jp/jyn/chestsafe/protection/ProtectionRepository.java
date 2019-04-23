@@ -1,21 +1,23 @@
 package jp.jyn.chestsafe.protection;
 
-import jp.jyn.chestsafe.config.config.MainConfig;
+import jp.jyn.chestsafe.config.MainConfig;
 import jp.jyn.chestsafe.db.DBConnector;
 import jp.jyn.chestsafe.db.driver.IDDriver.IntLocation;
 import jp.jyn.chestsafe.db.driver.ProtectionDriver;
 import jp.jyn.chestsafe.db.driver.ProtectionDriver.ProtectionInfo;
+import jp.jyn.chestsafe.event.ProtectionSetEvent;
 import jp.jyn.chestsafe.util.normalizer.BedNormalizer;
 import jp.jyn.chestsafe.util.normalizer.ChestNormalizer;
 import jp.jyn.chestsafe.util.normalizer.DoorNormalizer;
 import jp.jyn.chestsafe.util.normalizer.LocationNormalizer;
 import jp.jyn.chestsafe.util.normalizer.NoOpNormalizer;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.plugin.PluginManager;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -25,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class ProtectionRepository {
@@ -45,11 +48,18 @@ public class ProtectionRepository {
         /**
          * Already protected
          */
-        ALREADY_PROTECTED
+        ALREADY_PROTECTED,
+        /**
+         * Cancelled by event
+         */
+        CANCELLED
     }
 
     private final Map<Material, LocationNormalizer> normalizer = new EnumMap<>(Material.class);
     private final Set<Material> protectable = EnumSet.noneOf(Material.class);
+
+    private final PluginManager pluginManager = Bukkit.getServer().getPluginManager();
+    private final ProtectionSetEvent eventSet = new ProtectionSetEvent();
 
     private final ProtectionDriver protectionDriver;
     private final IDRepository idRepository;
@@ -93,12 +103,14 @@ public class ProtectionRepository {
         if (!optionalInt.isPresent()) {
             return Optional.empty();
         }
-        int id = optionalInt.getAsInt();
+        return Optional.ofNullable(get(optionalInt.getAsInt()));
+    }
 
+    private Protection get(int id) {
         // search protection cache
         Protection protection = idToProtectionCache.get(id);
         if (protection != null) {
-            return Optional.of(protection);
+            return protection;
         }
 
         // db request
@@ -106,13 +118,13 @@ public class ProtectionRepository {
         if (!infoOptional.isPresent()) {
             // Inconsistent
             idRepository.remove(id);
-            return Optional.empty();
+            return null;
         }
 
         // update cache
         protection = new SavedProtection(id, protectionDriver, idRepository, infoOptional.get());
         idToProtectionCache.put(id, protection);
-        return Optional.of(protection);
+        return protection;
     }
 
     /**
@@ -133,20 +145,29 @@ public class ProtectionRepository {
             return Result.ALREADY_PROTECTED;
         }
 
+        eventSet.setCancelled(false);
+        eventSet.setBlock(block);
+        eventSet.setProtection(protection);
+        pluginManager.callEvent(eventSet);
+        if (eventSet.isCancelled()) {
+            return Result.CANCELLED;
+        }
+        protection = eventSet.getProtection();
+
         // add protection
         IntLocation intLocation = intLocation(location);
         int id = idRepository.add(intLocation);
 
         // set value
         int[] members = protection.getMembers().stream().mapToInt(idRepository::UUIDToId).toArray();
-        Collection<Map.Entry<Byte, Boolean>> flags = protection.getFlags().stream()
-            .map(entry -> new AbstractMap.SimpleEntry<>((byte) entry.getKey().id, entry.getValue()))
-            .collect(Collectors.toSet());
+        Map<Integer, Boolean> flags = protection.getFlags().entrySet().stream().collect(
+            Collectors.toMap(v -> v.getKey().id, Map.Entry::getValue)
+        );
 
         protectionDriver.add(
             id,
             idRepository.UUIDToId(protection.getOwner()),
-            (byte) protection.getType().id,
+            protection.getType().id,
             members,
             flags
         );
@@ -319,14 +340,14 @@ public class ProtectionRepository {
     }
 
     /**
-     * Protection cleanup
+     * Check all protections.
      *
      * @param limit    Number of protections to check
      * @param offsetId Paging offset
      * @param checker  Protection remove checker
      * @return offset id
      */
-    public int cleanup(int limit, int offsetId, CleanupChecker checker) {
+    public int checkAll(int limit, int offsetId, Checker checker) {
         Integer id = 0;
         // cache bypass search.
         for (Map.Entry<Integer, IntLocation> protection : idRepository.getProtections(limit, offsetId)) {
@@ -334,7 +355,9 @@ public class ProtectionRepository {
             IntLocation location = protection.getValue();
             String world = idRepository.idToWorld(location.world).orElse(null);
 
-            if (checker.remove(world, location.x, location.y, location.z)) {
+            final int i = id;
+            Checker.Do result = checker.check(world, location.x, location.y, location.z, () -> get(i));
+            if (result == Checker.Do.REMOVE) {
                 // remove
                 idToProtectionCache.remove(id);
                 idRepository.remove(id, location);
@@ -344,17 +367,20 @@ public class ProtectionRepository {
     }
 
     @FunctionalInterface
-    public interface CleanupChecker {
+    public interface Checker {
+        enum Do {NOTHING, REMOVE}
+
         /**
-         * Decide whether to delete protection.
+         * Check protection.
          *
-         * @param world world name
-         * @param x     x
-         * @param y     y
-         * @param z     z
-         * @return If true, protection is deleted.
+         * @param world      world name
+         * @param x          x
+         * @param y          y
+         * @param z          z
+         * @param protection protection
+         * @return What to do with this protection?
          */
-        boolean remove(String world, int x, int y, int z);
+        Do check(String world, int x, int y, int z, Supplier<Protection> protection);
     }
 
     private Location normalizeLocation(Block block) {

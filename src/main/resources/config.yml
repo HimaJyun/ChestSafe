@@ -1,5 +1,7 @@
 # Use actionbar message.
 actionBar: true
+# Check new version.
+versionCheck: true
 
 default:
     auto: false
@@ -35,7 +37,7 @@ cleanup:
     # Cleanup cycle to perform the task (disable if 0)
     interval: 86400
     # Number of protections to check per second
-    checkPerSecond: 1000
+    checkPerSecond: 500
     # Warning: This function removes the protection for which the block can not be found.
     # That means that all protections in the unloaded world will be deleted.
 
@@ -52,7 +54,7 @@ database:
         # It is recommended to stop caching when using MySQL
         # If you have caches in your application, database cache is "wasted memory".
         init: "SET SESSION query_cache_type=0"
-        propaties:
+        properties:
             "useSSL": "false"
             # encoding
             #"useUnicode": "true"
@@ -81,7 +83,6 @@ cache:
     # -1 == Infinity(fast)
     #  0 == Disable(for expert)
     id: -1
-    uuid: -1
     # also used for negative cache meaning "does not exist".
     # It should be larger than "protection".
     location: 30000

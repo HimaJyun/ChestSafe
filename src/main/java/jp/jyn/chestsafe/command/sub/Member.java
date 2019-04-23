@@ -1,18 +1,17 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.config.parser.Parser;
-import jp.jyn.chestsafe.util.PlayerAction;
-import jp.jyn.chestsafe.command.SubCommand;
-import jp.jyn.chestsafe.config.config.MessageConfig;
-import jp.jyn.chestsafe.protection.Protection;
+import jp.jyn.chestsafe.command.CommandUtils;
+import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
-import jp.jyn.chestsafe.uuid.UUIDRegistry;
-import org.bukkit.Bukkit;
+import jp.jyn.chestsafe.util.PlayerAction;
+import jp.jyn.jbukkitlib.command.SubCommand;
+import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
+import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
@@ -29,19 +28,20 @@ import java.util.stream.Stream;
 public class Member extends SubCommand {
     private enum Operation {ADD, REMOVE}
 
+    private final MessageConfig message;
     private final UUIDRegistry registry;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
     public Member(MessageConfig message, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
-        super(message);
+        this.message = message;
         this.registry = registry;
         this.repository = repository;
         this.action = action;
     }
 
     @Override
-    protected boolean execCommand(Player sender, Queue<String> args) {
+    protected Result execCommand(Player sender, Queue<String> args) {
         // get members args
         Map<String, Operation> members = new HashMap<>();
         String tmp = args.remove().toLowerCase(Locale.ENGLISH);
@@ -61,7 +61,7 @@ public class Member extends SubCommand {
                         value = value.substring(1);
                         if (value.isEmpty()) {
                             sender.sendMessage(message.invalidArgument.toString("value", "-"));
-                            return false;
+                            return Result.ERROR;
                         }
                     }
                     members.put(value, operation);
@@ -69,11 +69,11 @@ public class Member extends SubCommand {
                 break;
             default:
                 sender.sendMessage(message.invalidArgument.toString("value", tmp));
-                return false;
+                return Result.ERROR;
         }
 
-        // get uuids
-        registry.getMultipleUUIDAsync(members.keySet(), map -> {
+        // get uuid
+        registry.getMultipleUUIDAsync(members.keySet()).thenAcceptSync(map -> {
             Set<UUID> add = new HashSet<>();
             Set<UUID> remove = new HashSet<>();
             // check user exists
@@ -97,32 +97,20 @@ public class Member extends SubCommand {
             action.setAction(sender, b -> modifyMember(sender, b, add, remove));
             sender.sendMessage(message.ready.toString());
         });
-        return true;
+        return Result.OK;
     }
 
     private void modifyMember(Player player, Block block, Collection<UUID> add, Collection<UUID> remove) {
-        Parser.Variable variable = new Parser.StringVariable().put("block", block.getType());
-
-        Protection protection = repository.get(block).orElse(null);
-        if (protection == null) {
-            player.sendMessage(message.notProtected.toString(variable));
-            return;
-        }
-
-        if (!protection.isOwner(player) &&
-            !player.hasPermission("chestsafe.passthrough")) {
-            variable.put("type", protection.getType());
-            player.sendMessage(message.denied.toString(variable));
-            return;
-        }
-
-        if (!add.isEmpty()) {
-            protection.addMembers(add);
-        }
-        if (!remove.isEmpty()) {
-            protection.removeMembers(remove);
-        }
-        player.sendMessage(message.memberChanged.toString());
+        TemplateVariable variable = StringVariable.init();
+        CommandUtils.checkProtection(message, repository, player, block, variable).ifPresent(protection -> {
+            if (!add.isEmpty()) {
+                protection.addMembers(add);
+            }
+            if (!remove.isEmpty()) {
+                protection.removeMembers(remove);
+            }
+            player.sendMessage(message.memberChanged.toString(variable));
+        });
     }
 
     @Override
@@ -134,15 +122,7 @@ public class Member extends SubCommand {
         }
         args.removeFirst(); // remove 1st args
 
-        Set<String> result = Bukkit.getOnlinePlayers().stream()
-            .map(Player::getName)
-            .filter(str -> str.startsWith(args.getLast()))
-            .collect(Collectors.toSet());
-        args.removeLast();
-
-        args.stream().map(str -> str.toLowerCase(Locale.ENGLISH)).forEach(result::remove);
-
-        return new ArrayList<>(result);
+        return CommandUtils.tabCompletePlayer(args);
     }
 
     @Override

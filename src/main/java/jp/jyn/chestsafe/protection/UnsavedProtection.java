@@ -49,8 +49,8 @@ public class UnsavedProtection implements Protection {
     }
 
     @Override
-    public Set<Map.Entry<Flag, Boolean>> getFlags() {
-        return flags.entrySet();
+    public Map<Flag, Boolean> getFlags() {
+        return flags;
     }
 
     @Override

@@ -1,16 +1,17 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.util.PlayerAction;
-import jp.jyn.chestsafe.command.SubCommand;
-import jp.jyn.chestsafe.config.config.MessageConfig;
-import jp.jyn.chestsafe.config.parser.Parser;
+import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
-import jp.jyn.chestsafe.uuid.UUIDRegistry;
+import jp.jyn.chestsafe.util.PlayerAction;
+import jp.jyn.jbukkitlib.command.SubCommand;
+import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
+import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Queue;
 import java.util.Set;
@@ -18,22 +19,23 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class Info extends SubCommand {
+    private final MessageConfig message;
     private final UUIDRegistry registry;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
     public Info(MessageConfig message, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
-        super(message);
+        this.message = message;
         this.registry = registry;
         this.repository = repository;
         this.action = action;
     }
 
     @Override
-    protected boolean execCommand(Player sender, Queue<String> args) {
+    protected Result execCommand(Player sender, Queue<String> args) {
         action.setAction(sender, block -> showInfo(sender, block));
         sender.sendMessage(message.ready.toString());
-        return true;
+        return Result.OK;
     }
 
     private void showInfo(Player player, Block block) {
@@ -44,11 +46,11 @@ public class Info extends SubCommand {
         }
 
         // uuid -> name convert
-        Set<UUID> request = new LinkedHashSet<>(protection.getMembers());
+        Set<UUID> request = new HashSet<>(protection.getMembers());
         request.add(protection.getOwner());
-        registry.getMultipleNameAsync(request, map -> {
+        registry.getMultipleNameAsync(request).thenAcceptSync(map -> {
             // set variable
-            Parser.Variable variable = new Parser.StringVariable()
+            TemplateVariable variable = StringVariable.init()
                 .put("type", protection.getType().name())
                 .put("owner", map.get(protection.getOwner()))
                 .put("uuid", protection.getOwner())
@@ -58,7 +60,7 @@ public class Info extends SubCommand {
                         .collect(Collectors.joining(", "))
                 )
                 .put("flags",
-                    protection.getFlags().stream()
+                    protection.getFlags().entrySet().stream()
                         .map(v -> v.getKey().name().toLowerCase(Locale.ENGLISH) + "=" + v.getValue())
                         .collect(Collectors.joining(", "))
                 );

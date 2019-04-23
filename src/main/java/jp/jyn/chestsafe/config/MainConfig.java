@@ -1,9 +1,11 @@
-package jp.jyn.chestsafe.config.config;
+package jp.jyn.chestsafe.config;
 
-import jp.jyn.chestsafe.cache.CacheFactory;
+import jp.jyn.chestsafe.ChestSafe;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.util.normalizer.BedNormalizer;
 import jp.jyn.chestsafe.util.normalizer.DoorNormalizer;
+import jp.jyn.jbukkitlib.cache.CacheFactory;
+import jp.jyn.jbukkitlib.util.PackagePrivate;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -23,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class MainConfig {
 
     public final boolean actionBar;
+    public final boolean versionCheck;
 
     public final Map<Material, ProtectionConfig> protectable = new EnumMap<>(Material.class);
 
@@ -30,8 +33,11 @@ public class MainConfig {
     public final DatabaseConfig database;
     public final CacheConfig cache;
 
-    public MainConfig(FileConfiguration config, Plugin plugin) {
+    @PackagePrivate
+    MainConfig(FileConfiguration config) {
         actionBar = config.getBoolean("actionBar");
+        versionCheck = config.getBoolean("versionCheck");
+
         ProtectionConfig defaultValue = new ProtectionConfig(config.getConfigurationSection("default"));
         for (Protection.Flag flag : Protection.Flag.values()) {
             // Initialize unset flags
@@ -48,7 +54,7 @@ public class MainConfig {
         }
 
         cleanup = new CleanupConfig(config.getConfigurationSection("cleanup"));
-        database = new DatabaseConfig(config.getConfigurationSection("database"), plugin);
+        database = new DatabaseConfig(config.getConfigurationSection("database"));
         cache = new CacheConfig(config.getConfigurationSection("cache"));
     }
 
@@ -79,21 +85,24 @@ public class MainConfig {
         public final long connectionTimeout;
         public final long idleTimeout;
 
-        private DatabaseConfig(ConfigurationSection config, Plugin plugin) {
+        private DatabaseConfig(ConfigurationSection config) {
             String tmpType = config.getString("type", "").toLowerCase(Locale.ENGLISH);
             switch (tmpType) {
                 case "sqlite":
-                    File dbfile = new File(plugin.getDataFolder(), config.getString("sqlite.file", "chestsafe.db"));
-                    dbfile.getParentFile().mkdirs();
-                    url = "jdbc:sqlite:" + dbfile.getPath();
+                    Plugin plugin = ChestSafe.getInstance();
+                    File db = new File(plugin.getDataFolder(), config.getString("sqlite.file", "chestsafe.db"));
+                    //noinspection ResultOfMethodCallIgnored
+                    db.getParentFile().mkdirs();
+                    url = "jdbc:sqlite:" + db.getPath();
                     init = "PRAGMA `foreign_keys`=`ON`"; // Enable FOREIGN KEY
                     break;
                 case "mysql":
-                    url = "jdbc:mysql://"
-                        + config.getString("mysql.host", "localhost:3306")
-                        + "/"
-                        + config.getString("mysql.name", "chestsafe");
-                    init = config.getString(tmpType + ".init", "/* ChestSafe */SELECT 1");
+                    url = String.format(
+                        "jdbc:mysql://%s/%s",
+                        config.getString("mysql.host", "localhost:3306"),
+                        config.getString("mysql.name", "chestsafe")
+                    );
+                    init = config.getString("mysql.init", "/* ChestSafe */SELECT 1");
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid value: Database.Type(config.yml)");
@@ -102,7 +111,7 @@ public class MainConfig {
             username = config.getString(tmpType + ".username");
             password = config.getString(tmpType + ".password");
 
-            String tmpKey = tmpType + ".propaties";
+            String tmpKey = tmpType + ".properties";
             if (config.contains(tmpKey)) {
                 for (String key : config.getConfigurationSection(tmpKey).getKeys(false)) {
                     properties.put(key, config.getString(tmpKey + "." + key));
@@ -119,19 +128,18 @@ public class MainConfig {
 
     public static class CacheConfig {
         public final CacheFactory id;
-        public final CacheFactory uuid;
         public final CacheFactory protection;
         public final CacheFactory location;
 
         private CacheConfig(ConfigurationSection config) {
-            id = new CacheFactory(config.getInt("id", -1));
-            uuid = new CacheFactory(config.getInt("uuid", -1));
-            location = new CacheFactory(config.getInt("location", 30000));
-            protection = new CacheFactory(config.getInt("protection", 10000));
+            id = new CacheFactory.Sized(config.getInt("id", -1));
+            location = new CacheFactory.Sized(config.getInt("location", 30000));
+            protection = new CacheFactory.Sized(config.getInt("protection", 10000));
         }
     }
 
     public static class ProtectionConfig {
+        @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
         public final Optional<Protection.Type> auto;
         public final Map<Protection.Flag, Boolean> flag = new EnumMap<>(Protection.Flag.class);
 

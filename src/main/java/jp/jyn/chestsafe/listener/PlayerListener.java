@@ -1,14 +1,18 @@
 package jp.jyn.chestsafe.listener;
 
-import jp.jyn.chestsafe.config.config.MainConfig;
-import jp.jyn.chestsafe.config.config.MessageConfig;
-import jp.jyn.chestsafe.config.parser.Parser;
+import jp.jyn.chestsafe.ChestSafe;
+import jp.jyn.chestsafe.config.MainConfig;
+import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
-import jp.jyn.chestsafe.util.ActionBarSender;
 import jp.jyn.chestsafe.util.PlayerAction;
+import jp.jyn.chestsafe.util.VersionChecker;
 import jp.jyn.chestsafe.util.normalizer.ChestNormalizer;
-import jp.jyn.chestsafe.uuid.UUIDRegistry;
+import jp.jyn.jbukkitlib.config.parser.template.TemplateParser;
+import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
+import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.util.ActionBarSender;
+import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -17,6 +21,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -35,23 +40,27 @@ public class PlayerListener implements Listener {
     private final BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
 
     private final UUIDRegistry registry;
+    private final VersionChecker checker;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
     private final Map<Material, MainConfig.ProtectionConfig> protectable;
     private final boolean useActionBar;
 
-    private final Parser notice, denied, protected_, removed;
+    private final TemplateParser notice, denied, protected_, removed;
     private final Sender sender;
 
     private interface Sender {
         void send(Player player, String message);
     }
 
-    public PlayerListener(MainConfig config, MessageConfig message, Plugin plugin, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
-        this.plugin = plugin;
+    public PlayerListener(MainConfig config, MessageConfig message,
+                          UUIDRegistry registry, VersionChecker checker,
+                          ProtectionRepository repository, PlayerAction action) {
+        this.plugin = ChestSafe.getInstance();
         this.protectable = config.protectable;
         this.registry = registry;
+        this.checker = checker;
         this.repository = repository;
         this.action = action;
 
@@ -82,9 +91,12 @@ public class PlayerListener implements Listener {
         }
     }
 
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        registry.updateCache(event.getPlayer());
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerJoin(PlayerJoinEvent e) {
+        Player player = e.getPlayer();
+        if (player.hasPermission("chestsafe.version")) {
+            checker.check(player);
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -110,7 +122,7 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        Parser.Variable variable = new Parser.StringVariable()
+        TemplateVariable variable = StringVariable.init()
             .put("block", block.getType())
             .put("type", protection.getType());
 
@@ -125,12 +137,10 @@ public class PlayerListener implements Listener {
         }
 
         variable.put("uuid", protection.getOwner());
-        registry.getNameAsync(protection.getOwner(), name -> sender.send(
+        registry.getNameAsync(protection.getOwner()).thenAcceptSync(name -> sender.send(
             player,
-            notice.toString(
-                variable.put("name", name.orElse("Unknown"))
-            ))
-        );
+            notice.toString(variable.put("name", name.orElse("Unknown")))
+        ));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -151,7 +161,7 @@ public class PlayerListener implements Listener {
             sender.send(
                 e.getPlayer(),
                 denied.toString(
-                    new Parser.StringVariable()
+                    StringVariable.init()
                         .put("block", block.getType())
                         .put("type", protection.getType())
                 )
@@ -176,14 +186,14 @@ public class PlayerListener implements Listener {
         sender.send(
             e.getPlayer(),
             removed.toString(
-                new Parser.StringVariable()
+                StringVariable.init()
                     .put("block", block.getType())
                     .put("type", protection.getType())
             )
         );
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockPlace(BlockPlaceEvent e) {
         Block block = e.getBlockPlaced();
         MainConfig.ProtectionConfig config = protectable.get(block.getType());
@@ -210,17 +220,18 @@ public class PlayerListener implements Listener {
                     return;
                 }
 
-                if (repository.set(protection, block) != ProtectionRepository.Result.SUCCESS) {
-                    return;
-                }
-
-                sender.send(
-                    player,
-                    protected_.toString(new Parser.StringVariable().put("block", block.getType()).put("type", protection.getType()))
-                );
+                setProtection(config.auto.get(), player, block);
             });
             return;
         }
+
+        setProtection(config.auto.get(), player, block);
+    }
+
+    private void setProtection(Protection.Type type, Player player, Block block) {
+        Protection protection = Protection.newProtection()
+            .setType(type)
+            .setOwner(player);
 
         if (repository.set(protection, block) != ProtectionRepository.Result.SUCCESS) {
             return;
@@ -228,7 +239,7 @@ public class PlayerListener implements Listener {
 
         sender.send(
             player,
-            protected_.toString(new Parser.StringVariable().put("block", block.getType()).put("type", protection.getType()))
+            protected_.toString(StringVariable.init().put("block", block.getType()).put("type", protection.getType()))
         );
     }
 

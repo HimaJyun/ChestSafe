@@ -44,7 +44,7 @@ public class ProtectionProxy implements Protection {
     }
 
     @Override
-    public Set<Map.Entry<Flag, Boolean>> getFlags() {
+    public Map<Flag, Boolean> getFlags() {
         return real.getFlags();
     }
 

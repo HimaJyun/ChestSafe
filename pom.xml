@@ -5,17 +5,21 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>jp.jyn</groupId>
     <artifactId>ChestSafe</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
+    <url>https://github.com/HimaJyun/ChestSafe</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <spigot.version>1.13.2-R0.1-SNAPSHOT</spigot.version>
+        <relocation.package>jp.jyn.chestsafe.lib</relocation.package>
     </properties>
 
-    <organization>
-        <name>HimaJyun</name>
-        <url>https://github.com/HimaJyun</url>
-    </organization>
+    <developers>
+        <developer>
+            <id>HimaJyun</id>
+            <url>https://jyn.jp/</url>
+        </developer>
+    </developers>
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -28,18 +32,28 @@
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+            <id>himajyun-repo</id>
+            <url>https://himajyun.github.io/mvn-repo/</url>
+        </repository>
     </repositories>
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>${spigot.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
+            <groupId>jp.jyn</groupId>
+            <artifactId>JBukkitLib</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>3.1.0</version>
+            <version>3.3.1</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -58,7 +72,6 @@
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
-                    <optimize>true</optimize>
                 </configuration>
             </plugin>
         </plugins>
@@ -110,10 +123,21 @@
                                     <minimizeJar>true</minimizeJar>
                                     <artifactSet>
                                         <includes>
-                                            <include>com.zaxxer:*</include>
+                                            <include>jp.jyn:JBukkitLib</include>
                                             <include>org.slf4j:*</include>
+                                            <include>com.zaxxer:HikariCP</include>
                                         </includes>
                                     </artifactSet>
+                                    <relocations>
+                                        <relocation>
+                                            <pattern>jp.jyn.jbukkitlib</pattern>
+                                            <shadedPattern>${relocation.package}.jbukkitlib</shadedPattern>
+                                        </relocation>
+                                        <relocation>
+                                            <pattern>com.zaxxer.hikari</pattern>
+                                            <shadedPattern>${relocation.package}.hikari</shadedPattern>
+                                        </relocation>
+                                    </relocations>
                                 </configuration>
                             </execution>
                         </executions>

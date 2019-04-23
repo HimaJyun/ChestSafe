@@ -2,7 +2,8 @@ package jp.jyn.chestsafe.db;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import jp.jyn.chestsafe.config.config.MainConfig;
+import jp.jyn.chestsafe.ChestSafe;
+import jp.jyn.chestsafe.config.MainConfig;
 import jp.jyn.chestsafe.db.driver.IDDriver;
 import jp.jyn.chestsafe.db.driver.ProtectionDriver;
 import jp.jyn.chestsafe.db.driver.mysql.IDMysql;
@@ -14,6 +15,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Logger;
 
 public class DBConnector {
     private final HikariDataSource hikari;
@@ -46,8 +48,10 @@ public class DBConnector {
             hikariConfig.setIdleTimeout(config.idleTimeout);
         }
 
+        Logger logger = ChestSafe.getInstance().getLogger();
         if (config.url.startsWith("jdbc:sqlite:")) {
             // SQLite
+            logger.info("Use SQLite");
             hikari = new HikariDataSource(hikariConfig);
             checkVersion();
 
@@ -55,6 +59,7 @@ public class DBConnector {
             protectionDriver = new ProtectionSqlite(hikari);
         } else if (config.url.startsWith("jdbc:mysql:")) {
             // MySQL
+            logger.info("Use MySQL");
             hikariConfig.setUsername(config.username);
             hikariConfig.setPassword(config.password);
             hikari = new HikariDataSource(hikariConfig);

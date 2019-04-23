@@ -1,12 +1,13 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.command.SubCommand;
-import jp.jyn.chestsafe.config.config.MessageConfig;
-import jp.jyn.chestsafe.config.parser.Parser;
-import jp.jyn.chestsafe.protection.Protection;
+import jp.jyn.chestsafe.command.CommandUtils;
+import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
-import jp.jyn.chestsafe.uuid.UUIDRegistry;
+import jp.jyn.jbukkitlib.command.SubCommand;
+import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
+import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -20,20 +21,21 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class Transfer extends SubCommand {
+    private final MessageConfig message;
     private final UUIDRegistry registry;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
     public Transfer(MessageConfig message, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
-        super(message);
+        this.message = message;
         this.registry = registry;
         this.repository = repository;
         this.action = action;
     }
 
     @Override
-    protected boolean execCommand(Player sender, Queue<String> args) {
-        registry.getUUIDAsync(args.element(), uuid -> {
+    protected Result execCommand(Player sender, Queue<String> args) {
+        registry.getUUIDAsync(args.element()).thenAcceptSync(uuid -> {
             if (!uuid.isPresent()) {
                 sender.sendMessage(message.playerNotFound.toString("name", args.remove()));
                 return;
@@ -43,23 +45,15 @@ public class Transfer extends SubCommand {
             sender.sendMessage(message.ready.toString());
             sender.sendMessage(message.transferWarning.toString());
         });
-        return true;
+        return Result.OK;
     }
 
     private void transferOwner(Player player, Block block, UUID newOwner) {
-        Protection protection = repository.get(block).orElse(null);
-        if (protection == null) {
-            player.sendMessage(message.notProtected.toString("block", block.getType()));
-            return;
-        }
-
-        if (!protection.isOwner(player) &&
-            !player.hasPermission("chestsafe.passthrough")) {
-            player.sendMessage(message.denied.toString(new Parser.StringVariable().put("block", block.getType()).put("type", protection.getType())));
-            return;
-        }
-        protection.setOwner(newOwner);
-        player.sendMessage(message.transferSuccess.toString());
+        TemplateVariable variable = StringVariable.init();
+        CommandUtils.checkProtection(message, repository, player, block, variable).ifPresent(protection -> {
+            protection.setOwner(newOwner);
+            player.sendMessage(message.transferSuccess.toString(variable));
+        });
     }
 
     @Override

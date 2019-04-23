@@ -1,8 +1,8 @@
 package jp.jyn.chestsafe.db.driver;
 
 import com.zaxxer.hikari.HikariDataSource;
+import jp.jyn.jbukkitlib.uuid.UUIDBytes;
 
-import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,7 +19,7 @@ import java.util.UUID;
 public abstract class IDDriver {
     private final HikariDataSource hikari;
 
-    public IDDriver(HikariDataSource hikari) {
+    protected IDDriver(HikariDataSource hikari) {
         this.hikari = hikari;
     }
 
@@ -79,7 +79,7 @@ public abstract class IDDriver {
     // | id(int) | uuid(byte[]) |
     // ==========================
     public int UUIDToId(UUID uuid) {
-        byte[] bytes = uuidToByte(uuid);
+        byte[] bytes = UUIDBytes.toBytes(uuid);
 
         try (Connection connection = hikari.getConnection();
              PreparedStatement statement = connection.prepareStatement(
@@ -120,27 +120,13 @@ public abstract class IDDriver {
             statement.setInt(1, id);
             try (ResultSet result = statement.executeQuery()) {
                 if (result.next()) {
-                    return Optional.of(byteToUUID(result.getBytes(1)));
+                    return Optional.of(UUIDBytes.fromBytes(result.getBytes(1)));
                 }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return Optional.empty();
-    }
-
-    private byte[] uuidToByte(UUID uuid) {
-        return ByteBuffer.allocate(16)
-            .putLong(uuid.getMostSignificantBits())
-            .putLong(uuid.getLeastSignificantBits())
-            .array();
-    }
-
-    private UUID byteToUUID(byte[] bytes) {
-        ByteBuffer bb = ByteBuffer.wrap(bytes);
-        long most = bb.getLong();
-        long least = bb.getLong();
-        return new UUID(most, least);
     }
 
     // ================== id_protection ==================

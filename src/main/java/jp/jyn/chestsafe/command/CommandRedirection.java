@@ -1,5 +1,6 @@
 package jp.jyn.chestsafe.command;
 
+import jp.jyn.jbukkitlib.command.SubExecutor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,6 +18,7 @@ public class CommandRedirection implements CommandExecutor, TabCompleter {
     private final Map<String, String[]> alias = new HashMap<>();
     private final SubExecutor executor;
 
+    @SuppressWarnings("SpellCheckingInspection")
     public CommandRedirection(SubExecutor executor) {
         this.executor = executor;
         alias.put("lock", array("private"));

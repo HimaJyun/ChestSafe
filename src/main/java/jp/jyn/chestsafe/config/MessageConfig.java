@@ -1,11 +1,14 @@
-package jp.jyn.chestsafe.config.config;
+package jp.jyn.chestsafe.config;
 
-import jp.jyn.chestsafe.config.parser.MessageParser;
-import jp.jyn.chestsafe.config.parser.Parser;
+import jp.jyn.jbukkitlib.config.parser.template.StringParser;
+import jp.jyn.jbukkitlib.config.parser.template.TemplateParser;
+import jp.jyn.jbukkitlib.util.PackagePrivate;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class MessageConfig {
@@ -13,69 +16,75 @@ public class MessageConfig {
     public final static String HEADER = "========== ChestSafe ==========";
     public final static String PLAYER_ONLY = PREFIX + ChatColor.RED + "This command can only be run by players.";
 
-    public final Parser doNotHavePermission;
-    public final Parser missingArgument;
+    public final TemplateParser doNotHavePermission;
+    public final TemplateParser missingArgument;
     /**
      * value
      */
-    public final Parser invalidArgument;
+    public final TemplateParser invalidArgument;
     /**
      * name
      */
-    public final Parser playerNotFound;
+    public final TemplateParser playerNotFound;
 
     /**
      * block,name,uuid,type
      */
-    public final Parser notice;
+    public final TemplateParser notice;
     /**
      * block,type
      */
-    public final Parser denied;
+    public final TemplateParser denied;
     /**
      * block,type
      */
-    public final Parser protected_;
+    public final TemplateParser protected_;
     /**
      * block,type
      */
-    public final Parser removed;
-    public final Parser ready;
+    public final TemplateParser removed;
+    public final TemplateParser ready;
 
     /**
      * block
      */
-    public final Parser notProtected;
+    public final TemplateParser notProtected;
     /**
      * block
      */
-    public final Parser notProtectable;
+    public final TemplateParser notProtectable;
     /**
      * block
      */
-    public final Parser alreadyProtected;
+    public final TemplateParser alreadyProtected;
 
-    public final Parser persistEnabled;
-    public final Parser persistDisabled;
+    public final TemplateParser persistEnabled;
+    public final TemplateParser persistDisabled;
     /**
      * flag,value
      */
-    public final Parser flagSet;
-    public final Parser memberChanged;
-    public final Parser transferSuccess;
-    public final Parser transferWarning;
-    public final Parser reloaded;
+    public final TemplateParser flagSet;
+    public final TemplateParser memberChanged;
+    public final TemplateParser transferSuccess;
+    public final TemplateParser transferWarning;
+    public final TemplateParser reloaded;
 
     /**
      * type,owner,uuid,members,flags
      */
-    public final Iterable<Parser> info;
+    public final List<TemplateParser> info;
+
+    /**
+     * old,new,url
+     */
+    public final List<TemplateParser> newVersion;
 
     public final ActionBar actionbar;
     public final CleanupMessage cleanup;
     public final HelpMessage help;
 
-    public MessageConfig(FileConfiguration config) {
+    @PackagePrivate
+    MessageConfig(FileConfiguration config) {
         doNotHavePermission = parse(config, "doNotHavePermission");
         missingArgument = parse(config, "missingArgument");
         invalidArgument = parse(config, "invalidArgument");
@@ -85,25 +94,28 @@ public class MessageConfig {
         denied = parse(config, "denied");
         protected_ = parse(config, "protected");
         removed = parse(config, "removed");
-
         ready = parse(config, "ready");
+
         notProtected = parse(config, "notProtected");
         notProtectable = parse(config, "notProtectable");
         alreadyProtected = parse(config, "alreadyProtected");
 
         persistEnabled = parse(config, "persistEnabled");
         persistDisabled = parse(config, "persistDisabled");
-
         flagSet = parse(config, "flagSet");
-
-        info = config.getStringList("info").stream().map(MessageConfig::parse).collect(Collectors.toList());
-
         memberChanged = parse(config, "memberChanged");
-
         transferSuccess = parse(config, "transferSuccess");
         transferWarning = parse(config, "transferWarning");
-
         reloaded = parse(config, "reloaded");
+
+        info = config.getStringList("info")
+            .stream()
+            .map(MessageConfig::parse)
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+        newVersion = config.getStringList("newVersion")
+            .stream()
+            .map(MessageConfig::parse)
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
 
         actionbar = new ActionBar(config);
         cleanup = new CleanupMessage(config.getConfigurationSection("cleanup"));
@@ -114,21 +126,21 @@ public class MessageConfig {
         /**
          * block,name,uuid,type
          */
-        public final Parser notice;
+        public final TemplateParser notice;
         /**
          * block,type
          */
-        public final Parser denied;
+        public final TemplateParser denied;
         /**
          * block,type
          */
-        public final Parser protected_;
+        public final TemplateParser protected_;
         /**
          * block,type
          */
-        public final Parser removed;
+        public final TemplateParser removed;
 
-        public ActionBar(ConfigurationSection config) {
+        private ActionBar(ConfigurationSection config) {
             notice = parse(config.getString("notice"));
             denied = parse(config.getString("denied"));
             protected_ = parse(config.getString("protected"));
@@ -140,18 +152,18 @@ public class MessageConfig {
         /**
          * speed
          */
-        public final Parser start;
+        public final TemplateParser start;
         /**
          * checked,removed
          */
-        public final Parser progress;
+        public final TemplateParser progress;
         /**
          * world,x,y,z
          */
-        public final Parser removed;
-        public final Parser end;
-        public final Parser already;
-        public final Parser cancelled;
+        public final TemplateParser removed;
+        public final TemplateParser end;
+        public final TemplateParser already;
+        public final TemplateParser cancelled;
 
         private CleanupMessage(ConfigurationSection config) {
             start = parse(config, "start");
@@ -164,23 +176,23 @@ public class MessageConfig {
     }
 
     public static class HelpMessage {
-        public final Parser private_;
-        public final Parser public_;
-        public final Parser flag;
-        public final Parser remove;
-        public final Parser info;
-        public final Parser member;
-        public final Parser transfer;
-        public final Parser persist;
-        public final Parser cleanup;
-        public final Parser reload;
-        public final Parser version;
-        public final Parser help;
-        public final Parser example;
+        public final TemplateParser private_;
+        public final TemplateParser public_;
+        public final TemplateParser flag;
+        public final TemplateParser remove;
+        public final TemplateParser info;
+        public final TemplateParser member;
+        public final TemplateParser transfer;
+        public final TemplateParser persist;
+        public final TemplateParser cleanup;
+        public final TemplateParser reload;
+        public final TemplateParser version;
+        public final TemplateParser help;
+        public final TemplateParser example;
         /**
          * flags
          */
-        public final Parser availableFlags;
+        public final TemplateParser availableFlags;
 
         private HelpMessage(ConfigurationSection config) {
             private_ = parse(config.getString("private"));
@@ -200,11 +212,11 @@ public class MessageConfig {
         }
     }
 
-    private static Parser parse(ConfigurationSection config, String key) {
+    private static TemplateParser parse(ConfigurationSection config, String key) {
         return parse(PREFIX + config.getString(key));
     }
 
-    private static Parser parse(String value) {
-        return MessageParser.parse(value);
+    private static TemplateParser parse(String value) {
+        return StringParser.parse(value);
     }
 }

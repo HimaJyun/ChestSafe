@@ -1,11 +1,11 @@
 package jp.jyn.chestsafe.command.sub;
 
-import jp.jyn.chestsafe.command.SubCommand;
-import jp.jyn.chestsafe.config.config.MessageConfig;
+import jp.jyn.chestsafe.config.MessageConfig;
+import jp.jyn.jbukkitlib.command.ErrorExecutor;
+import jp.jyn.jbukkitlib.command.SubCommand;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
@@ -15,21 +15,50 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
-public class Help extends SubCommand {
+public class Help extends SubCommand implements ErrorExecutor {
+    private final MessageConfig message;
     private final Map<String, SubCommand> commands;
 
     public Help(MessageConfig message, Map<String, SubCommand> commands) {
-        super(message);
+        this.message = message;
         this.commands = commands;
     }
 
     @Override
-    protected boolean execCommand(CommandSender sender, Queue<String> args) {
+    public boolean onError(Info error) {
+        CommandSender sender = error.sender;
+        switch (error.cause) {
+            case ERROR:
+                sendSubDetails(sender, error.subCommand);
+                break;
+            case COMMAND_NOT_FOUND:
+                sendSubCommands(sender);
+                break;
+            case DONT_HAVE_PERMISSION:
+                sender.sendMessage(message.doNotHavePermission.toString());
+                break;
+            case MISSING_ARGUMENT:
+                sender.sendMessage(message.missingArgument.toString());
+                sendSubDetails(sender, error.subCommand);
+                break;
+            case PLAYER_ONLY:
+                sender.sendMessage(MessageConfig.PLAYER_ONLY);
+                break;
+            default:
+                sender.sendMessage(ChatColor.RED + "Error: " + ChatColor.RESET + error.cause.name());
+                break;
+        }
+        return true;
+    }
+
+    @Override
+    protected Result execCommand(CommandSender sender, Queue<String> args) {
         // search detail help.
         SubCommand cmd = null;
         if (!args.isEmpty()) {
-            String sub = args.remove().toLowerCase(Locale.ENGLISH);
-            cmd = commands.get(sub);
+            cmd = commands.get(
+                args.remove().toLowerCase(Locale.ENGLISH)
+            );
         }
 
         if (cmd == null) {
@@ -37,7 +66,7 @@ public class Help extends SubCommand {
         } else {
             sendSubDetails(sender, cmd);
         }
-        return true;
+        return Result.OK;
     }
 
     @Override
@@ -60,40 +89,33 @@ public class Help extends SubCommand {
             "/chestsafe help private");
     }
 
-    public void sendSubCommands(CommandSender sender) {
+    private void sendSubCommands(CommandSender sender) {
         String[] messages = commands.values()
             .stream()
             .map(SubCommand::getHelp)
             .filter(Objects::nonNull)
-            .map(this::simpleHelp)
+            .map(help -> help.usage + " - " + help.description)
             .toArray(String[]::new);
 
         sender.sendMessage(MessageConfig.HEADER);
         sender.sendMessage(messages);
     }
 
-    public void sendSubDetails(CommandSender sender, SubCommand cmd) {
+    private void sendSubDetails(CommandSender sender, SubCommand cmd) {
         CommandHelp help = cmd.getHelp();
-        if (help != null) {
-            sender.sendMessage(MessageConfig.HEADER);
-            sender.sendMessage(detailsHelp(help));
+        if (help == null) {
+            return;
         }
-    }
 
-    private String simpleHelp(CommandHelp help) {
-        return help.usage + " - " + help.description;
-    }
-
-    private String[] detailsHelp(CommandHelp help) {
-        List<String> tmp = new ArrayList<>();
-        tmp.add(help.usage);
-        tmp.add(help.description);
+        sender.sendMessage(MessageConfig.HEADER);
+        sender.sendMessage(help.usage);
+        sender.sendMessage(help.description);
         if (help.example.length != 0) {
-            tmp.add("");
-            tmp.add(message.help.example.toString());
-            tmp.addAll(Arrays.asList(help.example));
+            sender.sendMessage("");
+            sender.sendMessage(message.help.example.toString());
+            for (String ex : help.example) {
+                sender.sendMessage(ex);
+            }
         }
-
-        return tmp.toArray(new String[0]);
     }
 }

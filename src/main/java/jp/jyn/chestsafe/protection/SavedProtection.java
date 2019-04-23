@@ -1,9 +1,11 @@
 package jp.jyn.chestsafe.protection;
 
 import jp.jyn.chestsafe.db.driver.ProtectionDriver;
-import jp.jyn.chestsafe.util.Lazy;
+import jp.jyn.jbukkitlib.util.Lazy;
+import jp.jyn.jbukkitlib.util.PackagePrivate;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +27,8 @@ public class SavedProtection implements Protection {
     private final Lazy<Set<UUID>> members;
     private final Lazy<Map<Flag, Boolean>> flags;
 
-    public SavedProtection(int id, ProtectionDriver protectionDriver, IDRepository idRepository, Protection protection) {
+    @PackagePrivate
+    SavedProtection(int id, ProtectionDriver protectionDriver, IDRepository idRepository, Protection protection) {
         this.id = id;
         this.protectionDriver = protectionDriver;
         this.idRepository = idRepository;
@@ -33,22 +36,23 @@ public class SavedProtection implements Protection {
         type = protection.getType();
         owner = protection.getOwner();
 
-        members = new Lazy<>(HashSet::new);
+        members = new Lazy.Simple<>(HashSet::new);
         members.get().addAll(protection.getMembers());
-        flags = new Lazy<>(() -> new EnumMap<>(Flag.class));
-        protection.getFlags().forEach(v -> flags.get().put(v.getKey(), v.getValue()));
+        flags = new Lazy.Simple<>(() -> new EnumMap<>(Flag.class));
+        protection.getFlags().forEach((key, value) -> flags.get().put(key, value));
     }
 
-    public SavedProtection(int id, ProtectionDriver protectionDriver, IDRepository idRepository, ProtectionDriver.ProtectionInfo info) {
+    @PackagePrivate
+    SavedProtection(int id, ProtectionDriver protectionDriver, IDRepository idRepository, ProtectionDriver.ProtectionInfo info) {
         this.id = id;
         this.protectionDriver = protectionDriver;
         this.idRepository = idRepository;
 
-        type = Type.valueOf((int) info.type);
+        type = Type.valueOf(info.type);
         owner = Objects.requireNonNull(idRepository.idToUUID(info.owner));
 
-        members = new Lazy<>(info.hasMember ? this::loadMembers : HashSet::new);
-        flags = new Lazy<>(info.hasFlag ? this::loadFlags : () -> new EnumMap<>(Flag.class));
+        members = new Lazy.Simple<>(info.hasMember ? this::loadMembers : HashSet::new);
+        flags = new Lazy.Simple<>(info.hasFlag ? this::loadFlags : () -> new EnumMap<>(Flag.class));
     }
 
     // region lazyload
@@ -64,7 +68,7 @@ public class SavedProtection implements Protection {
             .entrySet()
             .stream()
             .collect(Collectors.toMap(
-                v -> Flag.valueOf((int) v.getKey()),
+                v -> Flag.valueOf(v.getKey()),
                 Map.Entry::getValue,
                 (v1, v2) -> v1,
                 () -> new EnumMap<>(Flag.class)
@@ -73,7 +77,7 @@ public class SavedProtection implements Protection {
     // endregion
 
     private void update() {
-        protectionDriver.updateProtection(id, idRepository.UUIDToId(owner), (byte) type.id, hasMember(), hasFlag());
+        protectionDriver.updateProtection(id, idRepository.UUIDToId(owner), type.id, hasMember(), hasFlag());
     }
 
     @Override
@@ -189,7 +193,7 @@ public class SavedProtection implements Protection {
 
         boolean modify = !hasFlag();
 
-        protectionDriver.setFlag(id, (byte) flag.id, value);
+        protectionDriver.setFlag(id, flag.id, value);
         flags.get().put(flag, value);
 
         if (modify) {
@@ -201,7 +205,7 @@ public class SavedProtection implements Protection {
     @Override
     public Protection removeFlag(Flag flag) {
         if (flags.get().containsKey(flag)) {
-            protectionDriver.removeFlag(id, (byte) flag.id);
+            protectionDriver.removeFlag(id, flag.id);
             flags.get().remove(flag);
 
             if (!hasFlag()) {
@@ -236,7 +240,7 @@ public class SavedProtection implements Protection {
 
     @Override
     public Set<UUID> getMembers() {
-        return members.get();
+        return Collections.unmodifiableSet(members.get());
     }
 
     @Override
@@ -250,8 +254,8 @@ public class SavedProtection implements Protection {
     }
 
     @Override
-    public Set<Map.Entry<Flag, Boolean>> getFlags() {
-        return flags.get().entrySet();
+    public Map<Flag, Boolean> getFlags() {
+        return Collections.unmodifiableMap(flags.get());
     }
 
     @Override

@@ -27,6 +27,10 @@ info:
     - "Member: [{members}]"
     - "Flag: &{{flags}&}"
 
+newVersion:
+    - "New version available: {old} -> {new}"
+    - "Download: {url}"
+
 cleanup:
     start: "Cleanup: started. ({speed} check per second)"
     progress: "Cleanup: {checked} protections checked, {removed} protections removed."
