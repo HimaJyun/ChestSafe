@@ -225,7 +225,8 @@ public class ProtectionRepository {
      * <p>Convert double chest to single chest</p>
      * <p>Note: Must be called <b>before</b> becoming a single chest.</p>
      *
-     * @param block The remaining chest
+     * @param protection protection
+     * @param block      pair chest
      */
     public void chestShrink(Protection protection, Block block) {
         SavedProtection saved = castSaved(protection);
