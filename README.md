@@ -1,6 +1,6 @@
 # ChestSafe
 Chest protection plugin for Bukkit/Spigot.  
-[日本語解説](https://minecraft.jyn.jp/bukkit/plugin/chestsafe/)
+[日本語解説](https://e-craft.io/bukkit/plugin/chestsafe/)
 
 ## Feature
 - UUID Ready
