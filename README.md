@@ -2,6 +2,8 @@
 Chest protection plugin for Bukkit/Spigot.  
 [日本語解説](https://e-craft.io/bukkit/plugin/chestsafe/)
 
+[![Build Status](https://travis-ci.org/HimaJyun/ChestSafe.svg?branch=master)](https://travis-ci.org/HimaJyun/ChestSafe)
+
 ## Feature
 - UUID Ready
 - Command tab complete
