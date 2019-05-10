@@ -195,7 +195,7 @@ public class MainConfig {
         String key = material.toUpperCase(Locale.ENGLISH);
         switch (key) {
             case "_CHEST":
-                return Arrays.asList(Material.CHEST, Material.TRAPPED_CHEST);
+                return Arrays.asList(Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
             case "_SHULKER_BOX":
                 return Arrays.asList(
                     Material.SHULKER_BOX, Material.WHITE_SHULKER_BOX, Material.ORANGE_SHULKER_BOX,
@@ -211,7 +211,12 @@ public class MainConfig {
                     Material.JUNGLE_FENCE_GATE, Material.DARK_OAK_FENCE_GATE, Material.ACACIA_FENCE_GATE
                 );
             case "_SIGN":
-                return Arrays.asList(Material.SIGN, Material.WALL_SIGN);
+                return Arrays.asList(
+                    Material.SPRUCE_SIGN, Material.ACACIA_SIGN, Material.BIRCH_SIGN,
+                    Material.DARK_OAK_SIGN, Material.JUNGLE_SIGN, Material.OAK_SIGN,
+                    Material.SPRUCE_WALL_SIGN, Material.ACACIA_WALL_SIGN, Material.BIRCH_WALL_SIGN,
+                    Material.DARK_OAK_WALL_SIGN, Material.JUNGLE_WALL_SIGN, Material.OAK_WALL_SIGN
+                );
             case "_DOOR":
                 return DoorNormalizer.getDoors();
             case "_BANNER":

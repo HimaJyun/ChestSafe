@@ -18,16 +18,18 @@ protectable:
         auto: private
     TRAPPED_CHEST:
         auto: private
+    BARREL:
+        auto: private
     FURNACE:
         # This is a dummy to let the setting parser recognize it.
         # Used to inherit all settings from default.
         inherit: true
     _SHULKER_BOX:
         auto: false
-    _DOOR:
-        auto: public
-        flag:
-            redstone: true
+    #_DOOR:
+    #    auto: public
+    #    flag:
+    #        redstone: true
 
 cleanup:
     # Automatically delete protection that does not exist.

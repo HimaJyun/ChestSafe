@@ -2,12 +2,15 @@
 Chest protection plugin for Bukkit/Spigot.  
 [日本語解説](https://e-craft.io/bukkit/plugin/chestsafe/)
 
+[![Build Status](https://travis-ci.org/HimaJyun/ChestSafe.svg?branch=master)](https://travis-ci.org/HimaJyun/ChestSafe)
+
 ## Feature
 - UUID Ready
 - Command tab complete
 - Compatibility with legacy commands(e.g. /cprivate)
 - Easy to use
 - ActionBar message
+- Barrel, ShulkerBox available
 - API available
 
 # Installation
@@ -86,7 +89,7 @@ Please use [ChestSafe-Converter](https://github.com/HimaJyun/ChestSafe-Converter
     <dependency>
         <groupId>jp.jyn</groupId>
         <artifactId>ChestSafe</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>
