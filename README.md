@@ -8,6 +8,7 @@ Chest protection plugin for Bukkit/Spigot.
 - Compatibility with legacy commands(e.g. /cprivate)
 - Easy to use
 - ActionBar message
+- Barrel, ShulkerBox available
 - API available
 
 # Installation
@@ -86,7 +87,7 @@ Please use [ChestSafe-Converter](https://github.com/HimaJyun/ChestSafe-Converter
     <dependency>
         <groupId>jp.jyn</groupId>
         <artifactId>ChestSafe</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>
