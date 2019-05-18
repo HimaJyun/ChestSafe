@@ -65,20 +65,24 @@ public class BlockListener implements Listener {
     public void onInventoryMoveItem(InventoryMoveItemEvent e) {
         // notice: Occurs when the hopper attempts to transfer an item
         // That is, if the transfer is canceled, this event will occur indefinitely.
-
         Inventory hopper = e.getInitiator();
-        Inventory chest;
+        Inventory block;
         if (e.getSource() == e.getInitiator()) {
             // hopper/dropper -> chest
-            chest = e.getDestination();
+            block = e.getDestination();
         } else /*if (e.getDestination() == e.getInitiator())*/ {
             // chest -> hopper
-            chest = e.getSource();
+            block = e.getSource();
         }
 
         // chest first search(There are many cases where the chest is protected than the hopper)
-        if (checkFlag(chest.getLocation().getBlock(), Protection.Flag.HOPPER) ||
-            checkFlag(hopper.getLocation().getBlock(), Protection.Flag.HOPPER)) {
+        if (block.getLocation() != null &&
+            checkFlag(block.getLocation().getBlock(), Protection.Flag.HOPPER)) {
+            e.setCancelled(true);
+            return;
+        }
+
+        if (checkFlag(hopper.getLocation().getBlock(), Protection.Flag.HOPPER)) {
             e.setCancelled(true);
         }
     }
