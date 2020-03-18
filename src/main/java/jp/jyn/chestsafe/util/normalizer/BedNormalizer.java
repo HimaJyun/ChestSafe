@@ -4,22 +4,22 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.material.Bed;
+import org.bukkit.block.data.type.Bed;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 
 public class BedNormalizer implements LocationNormalizer {
+    private static final Set<Material> BEDS = EnumSet.noneOf(Material.class);
 
-    private static final Set<Material> BEDS = EnumSet.of(
-        Material.BLACK_BED, Material.BLUE_BED, Material.BROWN_BED,
-        Material.CYAN_BED, Material.GRAY_BED, Material.GREEN_BED,
-        Material.LIGHT_BLUE_BED, Material.LIGHT_GRAY_BED, Material.LIME_BED,
-        Material.MAGENTA_BED, Material.ORANGE_BED, Material.PINK_BED,
-        Material.PURPLE_BED, Material.RED_BED, Material.WHITE_BED,
-        Material.YELLOW_BED
-    );
+    static {
+        Arrays.stream(Material.values())
+            .filter(m -> m.name().endsWith("_BED"))
+            .filter(m -> !m.name().startsWith("LEGACY_"))
+            .forEach(BEDS::add);
+    }
 
     private static final BedNormalizer instance = new BedNormalizer();
 
@@ -35,8 +35,8 @@ public class BedNormalizer implements LocationNormalizer {
             return block.getLocation();
         }
 
-        Bed bed = (Bed) block.getState().getData();
-        if (!bed.isHeadOfBed()) {
+        Bed bed = (Bed) block.getBlockData();
+        if (bed.getPart() == Bed.Part.FOOT) {
             return block.getLocation();
         }
 
@@ -59,7 +59,7 @@ public class BedNormalizer implements LocationNormalizer {
         }
 
         Block b2 = block.getRelative(target);
-        if (!isBed(b2) || ((Bed) b2.getState().getData()).isHeadOfBed()) {
+        if (!isBed(b2) || ((Bed) b2.getBlockData()).getPart() == Bed.Part.HEAD) {
             // ?!
             return block.getLocation();
         }

@@ -3,19 +3,23 @@ package jp.jyn.chestsafe.util.normalizer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.material.Door;
+import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.type.Door;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 
 public class DoorNormalizer implements LocationNormalizer {
+    private static final Set<Material> DOORS = EnumSet.noneOf(Material.class);
 
-    private static final Set<Material> DOORS = EnumSet.of(
-        Material.OAK_DOOR, Material.IRON_DOOR,
-        Material.DARK_OAK_DOOR, Material.ACACIA_DOOR, Material.BIRCH_DOOR,
-        Material.JUNGLE_DOOR, Material.SPRUCE_DOOR
-    );
+    static {
+        Arrays.stream(Material.values())
+            .filter(m -> m.name().endsWith("_DOOR"))
+            .filter(m -> !m.name().startsWith("LEGACY_"))
+            .forEach(DOORS::add);
+    }
 
     private static final DoorNormalizer instance = new DoorNormalizer();
 
@@ -31,8 +35,8 @@ public class DoorNormalizer implements LocationNormalizer {
             return block.getLocation();
         }
 
-        Door door = (Door) block.getState().getData();
-        if (!door.isTopHalf()) {
+        Door door = (Door) block.getBlockData();
+        if (door.getHalf() == Bisected.Half.BOTTOM) {
             return block.getLocation();
         }
 
@@ -40,7 +44,7 @@ public class DoorNormalizer implements LocationNormalizer {
         loc.setY(loc.getY() - 1);
 
         Block b2 = loc.getBlock();
-        if (!isDoor(b2) || ((Door) b2.getState().getData()).isTopHalf()) {
+        if (!isDoor(b2) || ((Door) b2.getBlockData()).getHalf() == Bisected.Half.TOP) {
             // ?!
             return block.getLocation();
         }

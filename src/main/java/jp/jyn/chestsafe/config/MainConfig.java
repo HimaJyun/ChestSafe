@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class MainConfig {
 
@@ -118,11 +119,11 @@ public class MainConfig {
                 }
             }
 
-            maximumPoolSize = config.getInt("database.connectionPool.maximumPoolSize", -1);
-            minimumIdle = config.getInt("database.connectionPool.minimumIdle", -1);
-            maxLifetime = config.getLong("database.connectionPool.maxLifetime", -1);
-            connectionTimeout = config.getLong("database.connectionPool.connectionTimeout", -1);
-            idleTimeout = config.getLong("database.connectionPool.idleTimeout", -1);
+            maximumPoolSize = config.getInt("connectionPool.maximumPoolSize", -1);
+            minimumIdle = config.getInt("connectionPool.minimumIdle", -1);
+            maxLifetime = config.getLong("connectionPool.maxLifetime", -1);
+            connectionTimeout = config.getLong("connectionPool.connectionTimeout", -1);
+            idleTimeout = config.getLong("connectionPool.idleTimeout", -1);
         }
     }
 
@@ -197,53 +198,32 @@ public class MainConfig {
             case "_CHEST":
                 return Arrays.asList(Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
             case "_SHULKER_BOX":
-                return Arrays.asList(
-                    Material.SHULKER_BOX, Material.WHITE_SHULKER_BOX, Material.ORANGE_SHULKER_BOX,
-                    Material.LIGHT_BLUE_SHULKER_BOX, Material.YELLOW_SHULKER_BOX, Material.LIME_SHULKER_BOX,
-                    Material.PINK_SHULKER_BOX, Material.GRAY_SHULKER_BOX, Material.MAGENTA_SHULKER_BOX,
-                    Material.CYAN_SHULKER_BOX, Material.PURPLE_SHULKER_BOX, Material.BLUE_SHULKER_BOX,
-                    Material.BROWN_SHULKER_BOX, Material.GREEN_SHULKER_BOX, Material.RED_SHULKER_BOX,
-                    Material.BLACK_SHULKER_BOX, Material.LIGHT_GRAY_SHULKER_BOX
-                );
+                return Arrays.stream(Material.values())
+                    .filter(m -> m.name().endsWith("SHULKER_BOX"))
+                    .filter(m -> !m.name().startsWith("LEGACY_"))
+                    .collect(Collectors.toList());
             case "_FENCE_GATE":
-                return Arrays.asList(
-                    Material.OAK_FENCE_GATE, Material.SPRUCE_FENCE_GATE, Material.BIRCH_FENCE_GATE,
-                    Material.JUNGLE_FENCE_GATE, Material.DARK_OAK_FENCE_GATE, Material.ACACIA_FENCE_GATE
-                );
+                return Arrays.stream(Material.values())
+                    .filter(m -> m.name().endsWith("_FENCE_GATE"))
+                    .filter(m -> !m.name().startsWith("LEGACY_"))
+                    .collect(Collectors.toList());
             case "_SIGN":
-                return Arrays.asList(
-                    Material.SPRUCE_SIGN, Material.ACACIA_SIGN, Material.BIRCH_SIGN,
-                    Material.DARK_OAK_SIGN, Material.JUNGLE_SIGN, Material.OAK_SIGN,
-                    Material.SPRUCE_WALL_SIGN, Material.ACACIA_WALL_SIGN, Material.BIRCH_WALL_SIGN,
-                    Material.DARK_OAK_WALL_SIGN, Material.JUNGLE_WALL_SIGN, Material.OAK_WALL_SIGN
-                );
+                return Arrays.stream(Material.values())
+                    .filter(m -> m.name().endsWith("_SIGN"))
+                    .filter(m -> !m.name().startsWith("LEGACY_"))
+                    .collect(Collectors.toList());
             case "_DOOR":
                 return DoorNormalizer.getDoors();
             case "_BANNER":
-                return Arrays.asList(
-                    Material.BLACK_BANNER, Material.BLACK_WALL_BANNER,
-                    Material.BLUE_BANNER, Material.BLUE_WALL_BANNER,
-                    Material.BROWN_BANNER, Material.BROWN_WALL_BANNER,
-                    Material.CYAN_BANNER, Material.CYAN_WALL_BANNER,
-                    Material.GRAY_BANNER, Material.GRAY_WALL_BANNER,
-                    Material.GREEN_BANNER, Material.GREEN_WALL_BANNER,
-                    Material.LIGHT_BLUE_BANNER, Material.LIGHT_BLUE_WALL_BANNER,
-                    Material.LIGHT_GRAY_BANNER, Material.LIGHT_GRAY_WALL_BANNER,
-                    Material.LIME_BANNER, Material.LIME_WALL_BANNER,
-                    Material.MAGENTA_BANNER, Material.MAGENTA_WALL_BANNER,
-                    Material.ORANGE_BANNER, Material.ORANGE_WALL_BANNER,
-                    Material.PINK_BANNER, Material.PINK_WALL_BANNER,
-                    Material.PURPLE_BANNER, Material.PURPLE_WALL_BANNER,
-                    Material.RED_BANNER, Material.RED_WALL_BANNER,
-                    Material.WHITE_BANNER, Material.WHITE_WALL_BANNER,
-                    Material.YELLOW_BANNER, Material.YELLOW_WALL_BANNER);
+                return Arrays.stream(Material.values())
+                    .filter(m -> m.name().endsWith("_BANNER"))
+                    .filter(m -> !m.name().startsWith("LEGACY_"))
+                    .collect(Collectors.toList());
             case "_TRAPDOOR":
-                return Arrays.asList(
-                    Material.OAK_DOOR, Material.IRON_TRAPDOOR,
-                    Material.ACACIA_TRAPDOOR, Material.BIRCH_TRAPDOOR,
-                    Material.DARK_OAK_TRAPDOOR, Material.JUNGLE_TRAPDOOR,
-                    Material.SPRUCE_TRAPDOOR
-                );
+                return Arrays.stream(Material.values())
+                    .filter(m -> m.name().endsWith("_TRAPDDOR"))
+                    .filter(m -> !m.name().startsWith("LEGACY_"))
+                    .collect(Collectors.toList());
             case "_BED":
                 return BedNormalizer.getBeds();
             case "*":
