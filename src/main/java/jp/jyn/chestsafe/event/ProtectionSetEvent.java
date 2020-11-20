@@ -8,10 +8,16 @@ import org.bukkit.event.HandlerList;
 
 public class ProtectionSetEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
+
+    private final Block block;
+    private final Protection protection;
+
     private boolean cancelled = false;
 
-    private Block block;
-    private Protection protection;
+    public ProtectionSetEvent(Block block, Protection protection) {
+        this.block = block;
+        this.protection = protection;
+    }
 
     @Override
     public HandlerList getHandlers() {
@@ -38,24 +44,11 @@ public class ProtectionSetEvent extends Event implements Cancellable {
     }
 
     /**
-     * Changing the block does not cause anything (for internal use)
-     *
-     * @param block new block
-     */
-    public void setBlock(Block block) {
-        this.block = block;
-    }
-
-    /**
      * Get protection
      *
      * @return protection
      */
     public Protection getProtection() {
         return protection;
-    }
-
-    public void setProtection(Protection protection) {
-        this.protection = protection;
     }
 }

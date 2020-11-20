@@ -59,7 +59,6 @@ public class ProtectionRepository {
     private final Set<Material> protectable = EnumSet.noneOf(Material.class);
 
     private final PluginManager pluginManager = Bukkit.getServer().getPluginManager();
-    private final ProtectionSetEvent eventSet = new ProtectionSetEvent();
 
     private final ProtectionDriver protectionDriver;
     private final IDRepository idRepository;
@@ -145,14 +144,11 @@ public class ProtectionRepository {
             return Result.ALREADY_PROTECTED;
         }
 
-        eventSet.setCancelled(false);
-        eventSet.setBlock(block);
-        eventSet.setProtection(protection);
-        pluginManager.callEvent(eventSet);
-        if (eventSet.isCancelled()) {
+        ProtectionSetEvent event = new ProtectionSetEvent(block, protection);
+        pluginManager.callEvent(event);
+        if (event.isCancelled()) {
             return Result.CANCELLED;
         }
-        protection = eventSet.getProtection();
 
         // add protection
         IntLocation intLocation = intLocation(location);
