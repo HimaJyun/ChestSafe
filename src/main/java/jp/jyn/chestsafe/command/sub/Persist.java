@@ -24,8 +24,10 @@ public class Persist extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(Player sender, Queue<String> args) {
-        boolean persist = action.getPersist(sender);
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
+        Player player = (Player)sender;
+
+        boolean persist = action.getPersist(player);
 
         String value = args.poll();
         if (value == null) {
@@ -35,23 +37,23 @@ public class Persist extends SubCommand {
             try {
                 persist = CommandUtils.str2Bool(value);
             } catch (IllegalArgumentException e) {
-                sender.sendMessage(message.invalidArgument.toString("value", value));
+                player.sendMessage(message.invalidArgument.toString("value", value));
                 return Result.ERROR;
             }
         }
 
-        action.setPersist(sender, persist);
+        action.setPersist(player, persist);
         if (persist) {
-            sender.sendMessage(message.persistEnabled.toString());
+            player.sendMessage(message.persistEnabled.toString());
         } else {
-            sender.sendMessage(message.persistDisabled.toString());
+            player.sendMessage(message.persistDisabled.toString());
         }
 
         return Result.OK;
     }
 
     @Override
-    protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
+    protected List<String> onTabComplete(CommandSender sender, Deque<String> args) {
         if (args.size() == 1) {
             return Stream.of("true", "false").filter(str -> str.startsWith(args.getFirst())).collect(Collectors.toList());
         }

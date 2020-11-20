@@ -31,7 +31,9 @@ public class Private extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(Player sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
+        Player player = (Player) sender;
+
         // get and convert member uuid
         registry.getMultipleUUIDAsync(args).thenAcceptSync(map -> {
             Set<UUID> members = new HashSet<>(args.size());
@@ -39,27 +41,27 @@ public class Private extends SubCommand {
                 String name = args.remove();
                 UUID uuid = map.get(name);
                 if (uuid == null) {
-                    sender.sendMessage(message.playerNotFound.toString("name", name));
+                    player.sendMessage(message.playerNotFound.toString("name", name));
                     return;
                 }
                 members.add(uuid);
             }
 
-            action.setAction(sender, block -> CommandUtils.setProtection(
+            action.setAction(player, block -> CommandUtils.setProtection(
                 message, repository,
-                sender, block,
+                player, block,
                 Protection.newProtection()
                     .setType(Protection.Type.PRIVATE)
-                    .setOwner(sender)
+                    .setOwner(player)
                     .addMembers(members)
             ));
-            sender.sendMessage(message.ready.toString());
+            player.sendMessage(message.ready.toString());
         });
         return Result.OK;
     }
 
     @Override
-    protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
+    protected List<String> onTabComplete(CommandSender sender, Deque<String> args) {
         return CommandUtils.tabCompletePlayer(args);
     }
 

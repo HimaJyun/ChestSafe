@@ -22,38 +22,38 @@ transferWarning: "&6Warning&r: When you transfer protection you will no longer b
 reloaded: "Config has been reloaded."
 
 info:
-    - "Type: {type}"
-    - "Owner: {owner}({uuid})"
-    - "Member: [{members}]"
-    - "Flag: &{{flags}&}"
+  - "Type: {type}"
+  - "Owner: {owner}({uuid})"
+  - "Member: [{members}]"
+  - "Flag: &{{flags}&}"
 
 newVersion:
-    - "New version available: {old} -> {new}"
-    - "Download: {url}"
+  - "New version available: {old} -> {new}"
+  - "Download: {url}"
 
 cleanup:
-    start: "Cleanup: started. ({speed} check per second)"
-    progress: "Cleanup: {checked} protections checked, {removed} protections removed."
-    removed: "Cleanup: removed world={world}, x={x}, y={y}, z={z}"
-    end: "Cleanup: finished."
-    already: "Cleanup: already in progress."
-    cancelled: "Cleanup: cancelled."
+  start: "Cleanup: started. ({speed} check per second)"
+  progress: "Cleanup: {checked} protections checked, {removed} protections removed."
+  removed: "Cleanup: removed world={world}, x={x}, y={y}, z={z}"
+  end: "Cleanup: finished."
+  already: "Cleanup: already in progress."
+  cancelled: "Cleanup: cancelled."
 
 help:
-    private: "Create private protection."
-    public: "Create public protection."
-    flag: "Specify a flag for protection."
-    remove: "Remove protection."
-    info: "Display protection information."
-    member: "Add/Remove protection members."
-    transfer: "Change protection owner."
-    persist: "Perform operations permanently."
-    cleanup: "Delete protection of nonexistent blocks."
-    reload: "Reload config."
-    version: "Show version."
-    help: "Show helps."
-    example: "Example:"
-    availableFlags: "Available flags: {flags}"
+  private: "Create private protection."
+  public: "Create public protection."
+  flag: "Specify a flag for protection."
+  remove: "Remove protection."
+  info: "Display protection information."
+  member: "Add/Remove protection members."
+  transfer: "Change protection owner."
+  persist: "Perform operations permanently."
+  cleanup: "Delete protection of nonexistent blocks."
+  reload: "Reload config."
+  version: "Show version."
+  help: "Show helps."
+  example: "Example:"
+  availableFlags: "Available flags: {flags}"
 
 # //*<!-- syntax -->*/
 # &0->Black(#000000)
@@ -78,9 +78,9 @@ help:
 # &n->Underline
 # &o->Italic
 # &r->Reset
-# &&->&
+# #rrggbb (or #rgb)->Hex color
+# \->escape
 # {variable}->variable
-# &{variable&}->{variable}
 
 # Don't touch
 version: 1

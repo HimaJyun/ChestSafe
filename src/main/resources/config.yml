@@ -4,91 +4,88 @@ actionBar: true
 versionCheck: true
 
 default:
-    auto: false
-    flag:
-        mob: false
-        fire: false
-        hopper: false
-        redstone: false
-        explosion: false
+  auto: false
+  flag:
+    mob: false
+    fire: false
+    hopper: false
+    redstone: false
+    explosion: false
 
 # https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html
 protectable:
-    CHEST:
-        auto: private
-    TRAPPED_CHEST:
-        auto: private
-    BARREL:
-        auto: private
-    FURNACE:
-        # This is a dummy to let the setting parser recognize it.
-        # Used to inherit all settings from default.
-        inherit: true
-    _SHULKER_BOX:
-        auto: false
-    #_DOOR:
-    #    auto: public
-    #    flag:
-    #        redstone: true
+  CHEST:
+    auto: private
+  TRAPPED_CHEST:
+    auto: private
+  BARREL:
+    auto: private
+  FURNACE: { } # When inheriting, specify an empty object.
+  _SHULKER_BOX:
+    auto: false
+  #_DOOR:
+  #  auto: public
+  #  flag:
+  #      redstone: true
 
 cleanup:
-    # Automatically delete protection that does not exist.
-    enable: false
-    # Waiting time from startup (0 for immediate)
-    delay: 60
-    # Cleanup cycle to perform the task (disable if 0)
-    interval: 86400
-    # Number of protections to check per second
-    checkPerSecond: 500
-    # Warning: This function removes the protection for which the block can not be found.
-    # That means that all protections in the unloaded world will be deleted.
+  # Automatically delete protection that does not exist.
+  enable: false
+  # Waiting time from startup (0 for immediate)
+  delay: 60
+  # Cleanup cycle to perform the task (disable if 0)
+  interval: 86400
+  # Number of protections to check per second
+  checkPerSecond: 500
+  # Warning: This function removes the protection for which the block can not be found.
+  # That means that all protections in the unloaded world will be deleted.
 
 database:
-    # Database type. (sqlite/mysql)
-    type: sqlite
-    sqlite:
-        file: "chestsafe.db"
-    mysql:
-        host: "localhost:3306"
-        name: "chestsafe"
-        username: "root"
-        password: "your_mysql_password"
-        # It is recommended to stop caching when using MySQL
-        # If you have caches in your application, database cache is "wasted memory".
-        init: "SET SESSION query_cache_type=0"
-        properties:
-            "useSSL": "false"
-            # encoding
-            #"useUnicode": "true"
-            #"characterEncoding": "UTF-8"
-            #"characterSetResults": "UTF-8"
-            # performance
-            "maintainTimeStats": "false"
-            "elideSetAutoCommits": "true"
-            "useLocalSessionState": "true"
-            "alwaysSendSetIsolation": "false"
-            "cacheServerConfiguration": "true"
-            "cachePrepStmts": "true"
-            "prepStmtCacheSize": "250"
-            "prepStmtCacheSqlLimit": "2048"
-            #"useServerPrepStmts": "true"
-    connectionPool:
-        # -1 is default
-        maximumPoolSize: -1
-        minimumIdle: -1
-        maxLifetime: -1
-        connectionTimeout: -1
-        idleTimeout: -1
+  # Database type. (sqlite/mysql)
+  type: sqlite
+  sqlite:
+    file: "chestsafe.db"
+  mysql:
+    host: "localhost:3306"
+    name: "chestsafe"
+    username: "root"
+    password: "your_mysql_password"
+    # It is recommended to stop caching when using MySQL
+    # If application has a cache, the database cache is "wasted memory".
+    init: "SET SESSION query_cache_type=0"
+    properties:
+      "useSSL": "false"
+      # encoding
+      #"useUnicode": "true"
+      #"characterEncoding": "UTF-8"
+      #"characterSetResults": "UTF-8"
+      # performance
+      "maintainTimeStats": "false"
+      "elideSetAutoCommits": "true"
+      "useLocalSessionState": "true"
+      "alwaysSendSetIsolation": "false"
+      "cacheServerConfiguration": "true"
+      "cachePrepStmts": "true"
+      "prepStmtCacheSize": "250"
+      "prepStmtCacheSqlLimit": "2048"
+      #"useServerPrepStmts": "true"
+  connectionPool:
+    # -1 is default
+    maximumPoolSize: -1
+    minimumIdle: -1
+    maxLifetime: -1
+    connectionTimeout: -1
+    idleTimeout: -1
 
 cache:
-    # +n == The specified number is stored in the LRU cache(memory saving)
-    # -1 == Infinity(fast)
-    #  0 == Disable(for expert)
-    id: -1
-    # also used for negative cache meaning "does not exist".
-    # It should be larger than "protection".
-    location: 30000
-    protection: 10000
+  # +n == The specified number is stored in the LRU cache(memory saving)
+  # -1 == Infinity(fast)
+  #  0 == Disable(for expert)
+  id: -1
+  # also used for negative cache meaning "does not exist".
+  # It should be larger than "protection".
+  location: 30000
+  protection: 10000
 
 # Don't touch
 version: 1

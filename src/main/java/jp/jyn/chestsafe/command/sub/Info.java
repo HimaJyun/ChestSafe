@@ -9,6 +9,7 @@ import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
 import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.HashSet;
@@ -32,9 +33,11 @@ public class Info extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(Player sender, Queue<String> args) {
-        action.setAction(sender, block -> showInfo(sender, block));
-        sender.sendMessage(message.ready.toString());
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
+        Player player = (Player) sender;
+
+        action.setAction(player, block -> showInfo(player, block));
+        player.sendMessage(message.ready.toString());
         return Result.OK;
     }
 

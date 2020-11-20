@@ -46,30 +46,32 @@ public class Flag extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(Player sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
+        Player player = (Player) sender;
+
         String tmp = args.remove();
         Protection.Flag flag;
         try {
             flag = Protection.Flag.valueOf(tmp.toUpperCase(Locale.ENGLISH));
         } catch (IllegalArgumentException e) {
-            sender.sendMessage(message.invalidArgument.toString("value", tmp));
+            player.sendMessage(message.invalidArgument.toString("value", tmp));
             return Result.ERROR;
         }
 
         // permission
-        if (!sender.hasPermission("chestsafe.flag." + flag.name().toLowerCase(Locale.ENGLISH))) {
-            sender.sendMessage(message.doNotHavePermission.toString());
+        if (!player.hasPermission("chestsafe.flag." + flag.name().toLowerCase(Locale.ENGLISH))) {
+            player.sendMessage(message.doNotHavePermission.toString());
             return Result.OK;
         }
 
         Value value = parseValue(args.peek());
         if (value == null) {
-            sender.sendMessage(message.invalidArgument.toString("value", args.peek()));
+            player.sendMessage(message.invalidArgument.toString("value", args.peek()));
             return Result.ERROR;
         }
 
-        action.setAction(sender, b -> setFlag(sender, b, flag, value));
-        sender.sendMessage(message.ready.toString());
+        action.setAction(player, b -> setFlag(player, b, flag, value));
+        player.sendMessage(message.ready.toString());
         return Result.OK;
     }
 
@@ -135,7 +137,7 @@ public class Flag extends SubCommand {
     }
 
     @Override
-    protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
+    protected List<String> onTabComplete(CommandSender sender, Deque<String> args) {
         if (args.size() == 1) {
             return Arrays.stream(Protection.Flag.values())
                 .map(Enum::name)

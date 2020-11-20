@@ -6,6 +6,7 @@ import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.jbukkitlib.command.SubCommand;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Queue;
@@ -22,15 +23,17 @@ public class Public extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(Player sender, Queue<String> args) {
-        action.setAction(sender, block -> CommandUtils.setProtection(
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
+        Player player = (Player) sender;
+
+        action.setAction(player, block -> CommandUtils.setProtection(
             message, repository,
-            sender, block,
+            player, block,
             Protection.newProtection()
                 .setType(Protection.Type.PUBLIC)
-                .setOwner(sender)
+                .setOwner(player)
         ));
-        sender.sendMessage(message.ready.toString());
+        player.sendMessage(message.ready.toString());
         return Result.OK;
     }
 

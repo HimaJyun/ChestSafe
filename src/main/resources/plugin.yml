@@ -4,136 +4,136 @@ version: "${project.version}"
 website: "${project.url}"
 author: "HimaJyun( https://jyn.jp/ )"
 description: "ChestSafe is a block protection plugin."
-api-version: "1.15"
+api-version: "1.16"
 
 commands:
-    chestsafe:
-        description: '"/chestsafe help" - Show helps.'
-        aliases: c
-    lock:
-        description: 'Alias of "/chestsafe private"'
-    unlock:
-        description: 'Alias of "/chestsafe remove"'
-    cprivate:
-        description: 'Alias of "/chestsafe private"'
-    cpublic:
-        description: 'Alias of "/chestsafe public"'
-    cremove:
-        description: 'Alias of "/chestsafe remove"'
-    cinfo:
-        description: 'Alias of "/chestsafe info"'
-    cmodify:
-        description: 'Alias of "/chestsafe member modify"'
-    cpersist:
-        description: 'Alias of "/chestsafe persist"'
-    chopper:
-        description: 'Alias of "/chestsafe flag hopper"'
-    cexplosion:
-        description: 'Alias of "/chestsafe flag explosion"'
-    callowexplosions:
-        description: 'Alias of "/chestsafe flag explosion"'
-    ctnt:
-        description: 'Alias of "/chestsafe flag explosion"'
-    cfire:
-        description: 'Alias of "/chestsafe flag fire"'
-    credstone:
-        description: 'Alias of "/chestsafe flag redstone"'
-    cmob:
-        description: 'Alias of "/chestsafe flag mob"'
+  chestsafe:
+    description: '"/chestsafe help" - Show helps.'
+    aliases: c
+  lock:
+    description: 'Alias of "/chestsafe private"'
+  unlock:
+    description: 'Alias of "/chestsafe remove"'
+  cprivate:
+    description: 'Alias of "/chestsafe private"'
+  cpublic:
+    description: 'Alias of "/chestsafe public"'
+  cremove:
+    description: 'Alias of "/chestsafe remove"'
+  cinfo:
+    description: 'Alias of "/chestsafe info"'
+  cmodify:
+    description: 'Alias of "/chestsafe member modify"'
+  cpersist:
+    description: 'Alias of "/chestsafe persist"'
+  chopper:
+    description: 'Alias of "/chestsafe flag hopper"'
+  cexplosion:
+    description: 'Alias of "/chestsafe flag explosion"'
+  callowexplosions:
+    description: 'Alias of "/chestsafe flag explosion"'
+  ctnt:
+    description: 'Alias of "/chestsafe flag explosion"'
+  cfire:
+    description: 'Alias of "/chestsafe flag fire"'
+  credstone:
+    description: 'Alias of "/chestsafe flag redstone"'
+  cmob:
+    description: 'Alias of "/chestsafe flag mob"'
 
 permissions:
-    # Create
-    chestsafe.create.*:
-        default: false
-        children:
-            chestsafe.create.private: true
-            chestsafe.create.public: true
-    chestsafe.create.private:
-        default: true
-    chestsafe.create.public:
-        default: true
-    # Flags
-    chestsafe.flag.*:
-        default: false
-        children:
-            chestsafe.flag.hopper: true
-            chestsafe.flag.explosion: true
-            chestsafe.flag.fire: true
-            chestsafe.flag.redstone: true
-            chestsafe.flag.mob: true
-    chestsafe.flag.hopper:
-        default: true
-    chestsafe.flag.explosion:
-        default: true
-    chestsafe.flag.fire:
-        default: true
-    chestsafe.flag.redstone:
-        default: true
-    chestsafe.flag.mob:
-        default: true
-    # Other
-    chestsafe.remove:
-        default: true
-    chestsafe.info:
-        default: true
-    chestsafe.member:
-        default: true
-    chestsafe.transfer:
-        default: true
-    chestsafe.persist:
-        default: true
-    chestsafe.notice:
-        default: true
-    # OP
-    chestsafe.passthrough:
-        default: op
-    chestsafe.cleanup:
-        default: op
-    chestsafe.reload:
-        default: op
-    chestsafe.version:
-        default: op
-    # wild card
-    chestsafe.*:
-        default: false
-        children:
-            chestsafe.create.private: true
-            chestsafe.create.public: true
-            chestsafe.flag.hopper: true
-            chestsafe.flag.explosion: true
-            chestsafe.flag.fire: true
-            chestsafe.flag.redstone: true
-            chestsafe.flag.mob: true
-            chestsafe.remove: true
-            chestsafe.member: true
-            chestsafe.transfer: true
-            chestsafe.info: true
-            chestsafe.persist: true
-            chestsafe.notice: true
-            chestsafe.passthrough: true
-            chestsafe.cleanup: true
-            chestsafe.reload: true
-            chestsafe.version: true
-    chestsafe.op:
-        default: false
-        children:
-            chestsafe.passthrough: true
-            chestsafe.cleanup: true
-            chestsafe.reload: true
-            chestsafe.version: true
-    chestsafe.user:
-        default: false
-        children:
-            chestsafe.create.private: true
-            chestsafe.create.public: true
-            chestsafe.flag.hopper: true
-            chestsafe.flag.explosion: true
-            chestsafe.flag.fire: true
-            chestsafe.flag.redstone: true
-            chestsafe.flag.mob: true
-            chestsafe.remove: true
-            chestsafe.member: true
-            chestsafe.transfer: true
-            chestsafe.info: true
-            chestsafe.persist: true
-            chestsafe.notice: true
+  # Create
+  chestsafe.create.*:
+    default: false
+    children:
+      chestsafe.create.private: true
+      chestsafe.create.public: true
+  chestsafe.create.private:
+    default: true
+  chestsafe.create.public:
+    default: true
+  # Flags
+  chestsafe.flag.*:
+    default: false
+    children:
+      chestsafe.flag.hopper: true
+      chestsafe.flag.explosion: true
+      chestsafe.flag.fire: true
+      chestsafe.flag.redstone: true
+      chestsafe.flag.mob: true
+  chestsafe.flag.hopper:
+    default: true
+  chestsafe.flag.explosion:
+    default: true
+  chestsafe.flag.fire:
+    default: true
+  chestsafe.flag.redstone:
+    default: true
+  chestsafe.flag.mob:
+    default: true
+  # Other
+  chestsafe.remove:
+    default: true
+  chestsafe.info:
+    default: true
+  chestsafe.member:
+    default: true
+  chestsafe.transfer:
+    default: true
+  chestsafe.persist:
+    default: true
+  chestsafe.notice:
+    default: true
+  # OP
+  chestsafe.passthrough:
+    default: op
+  chestsafe.cleanup:
+    default: op
+  chestsafe.reload:
+    default: op
+  chestsafe.version:
+    default: op
+  # wild card
+  chestsafe.*:
+    default: false
+    children:
+      chestsafe.create.private: true
+      chestsafe.create.public: true
+      chestsafe.flag.hopper: true
+      chestsafe.flag.explosion: true
+      chestsafe.flag.fire: true
+      chestsafe.flag.redstone: true
+      chestsafe.flag.mob: true
+      chestsafe.remove: true
+      chestsafe.member: true
+      chestsafe.transfer: true
+      chestsafe.info: true
+      chestsafe.persist: true
+      chestsafe.notice: true
+      chestsafe.passthrough: true
+      chestsafe.cleanup: true
+      chestsafe.reload: true
+      chestsafe.version: true
+  chestsafe.op:
+    default: false
+    children:
+      chestsafe.passthrough: true
+      chestsafe.cleanup: true
+      chestsafe.reload: true
+      chestsafe.version: true
+  chestsafe.user:
+    default: false
+    children:
+      chestsafe.create.private: true
+      chestsafe.create.public: true
+      chestsafe.flag.hopper: true
+      chestsafe.flag.explosion: true
+      chestsafe.flag.fire: true
+      chestsafe.flag.redstone: true
+      chestsafe.flag.mob: true
+      chestsafe.remove: true
+      chestsafe.member: true
+      chestsafe.transfer: true
+      chestsafe.info: true
+      chestsafe.persist: true
+      chestsafe.notice: true

@@ -41,7 +41,9 @@ public class Member extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(Player sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
+        Player player = (Player) sender;
+
         // get members args
         Map<String, Operation> members = new HashMap<>();
         String tmp = args.remove().toLowerCase(Locale.ENGLISH);
@@ -60,7 +62,7 @@ public class Member extends SubCommand {
                         operation = Operation.REMOVE;
                         value = value.substring(1);
                         if (value.isEmpty()) {
-                            sender.sendMessage(message.invalidArgument.toString("value", "-"));
+                            player.sendMessage(message.invalidArgument.toString("value", "-"));
                             return Result.ERROR;
                         }
                     }
@@ -68,7 +70,7 @@ public class Member extends SubCommand {
                 }
                 break;
             default:
-                sender.sendMessage(message.invalidArgument.toString("value", tmp));
+                player.sendMessage(message.invalidArgument.toString("value", tmp));
                 return Result.ERROR;
         }
 
@@ -80,7 +82,7 @@ public class Member extends SubCommand {
             for (Map.Entry<String, Operation> entry : members.entrySet()) {
                 UUID uuid = map.get(entry.getKey());
                 if (uuid == null) {
-                    sender.sendMessage(message.playerNotFound.toString("name", entry.getKey()));
+                    player.sendMessage(message.playerNotFound.toString("name", entry.getKey()));
                     return;
                 }
 
@@ -94,8 +96,8 @@ public class Member extends SubCommand {
                 }
             }
 
-            action.setAction(sender, b -> modifyMember(sender, b, add, remove));
-            sender.sendMessage(message.ready.toString());
+            action.setAction(player, b -> modifyMember(player, b, add, remove));
+            player.sendMessage(message.ready.toString());
         });
         return Result.OK;
     }
@@ -114,7 +116,7 @@ public class Member extends SubCommand {
     }
 
     @Override
-    protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
+    protected List<String> onTabComplete(CommandSender sender, Deque<String> args) {
         if (args.size() == 1) {
             return Stream.of("add", "remove", "modify")
                 .filter(str -> str.startsWith(args.getFirst()))

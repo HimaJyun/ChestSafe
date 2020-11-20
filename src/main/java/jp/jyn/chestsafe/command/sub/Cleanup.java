@@ -29,7 +29,7 @@ public class Cleanup extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(CommandSender sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
         int speed = config.cleanup.checkPerSecond;
         // argument check.
         if (!args.isEmpty()) {
@@ -71,7 +71,7 @@ public class Cleanup extends SubCommand {
     }
 
     @Override
-    protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
+    protected List<String> onTabComplete(CommandSender sender, Deque<String> args) {
         if (args.size() == 1 && "cancel".startsWith(args.removeFirst())) {
             return Collections.singletonList("cancel");
         }

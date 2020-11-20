@@ -34,16 +34,18 @@ public class Transfer extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(Player sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
+        Player player = (Player) sender;
+
         registry.getUUIDAsync(args.element()).thenAcceptSync(uuid -> {
             if (!uuid.isPresent()) {
-                sender.sendMessage(message.playerNotFound.toString("name", args.remove()));
+                player.sendMessage(message.playerNotFound.toString("name", args.remove()));
                 return;
             }
 
-            action.setAction(sender, block -> transferOwner(sender, block, uuid.get()));
-            sender.sendMessage(message.ready.toString());
-            sender.sendMessage(message.transferWarning.toString());
+            action.setAction(player, block -> transferOwner(player, block, uuid.get()));
+            player.sendMessage(message.ready.toString());
+            player.sendMessage(message.transferWarning.toString());
         });
         return Result.OK;
     }
@@ -57,7 +59,7 @@ public class Transfer extends SubCommand {
     }
 
     @Override
-    protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
+    protected List<String> onTabComplete(CommandSender sender, Deque<String> args) {
         if (args.size() == 1) {
             return Bukkit.getOnlinePlayers().stream()
                 .map(Player::getName)

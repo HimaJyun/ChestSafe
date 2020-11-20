@@ -8,6 +8,7 @@ import jp.jyn.jbukkitlib.command.SubCommand;
 import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
 import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Queue;
@@ -24,9 +25,11 @@ public class Remove extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(Player sender, Queue<String> args) {
-        action.setAction(sender, block -> removeProtection(sender, block));
-        sender.sendMessage(message.ready.toString());
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
+        Player player = (Player) sender;
+
+        action.setAction(player, block -> removeProtection(player, block));
+        player.sendMessage(message.ready.toString());
         return Result.OK;
     }
 
