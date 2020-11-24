@@ -32,13 +32,14 @@ cleanup:
   # Automatically delete protection that does not exist.
   enable: false
   # Waiting time from startup (0 for immediate)
-  delay: 60
-  # Cleanup cycle to perform the task (disable if 0)
-  interval: 86400
-  # Number of protections to check per second
-  checkPerSecond: 500
-  # Warning: This function removes the protection for which the block can not be found.
+  delay: 60 # seconds
+  # Cleanup cycle to perform the task (0 for disable)
+  interval: 86400 # seconds
+  # Processing time limit per seconds.
+  limit: 50 # milli seconds
+  # If true, include the unloaded world.
   # That means that all protections in the unloaded world will be deleted.
+  unloaded: false
 
 database:
   # Database type. (sqlite/mysql)
@@ -52,9 +53,11 @@ database:
     password: "your_mysql_password"
     # It is recommended to stop caching when using MySQL
     # If application has a cache, the database cache is "wasted memory".
-    init: "SET SESSION query_cache_type=0"
+    #init: "SET SESSION query_cache_type=0"
+    init: "SELECT 1"
     properties:
       "useSSL": "false"
+      #"allowPublicKeyRetrieval": "true" # for MySQL 8
       # encoding
       #"useUnicode": "true"
       #"characterEncoding": "UTF-8"
@@ -88,4 +91,4 @@ cache:
   protection: 10000
 
 # Don't touch
-version: 1
+version: 2

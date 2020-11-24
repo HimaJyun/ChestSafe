@@ -34,6 +34,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.concurrent.TimeUnit;
 
 public class ChestSafe extends JavaPlugin {
     private static ChestSafe instance = null;
@@ -73,18 +74,24 @@ public class ChestSafe extends JavaPlugin {
 
         // cleanup
         if (main.cleanup.enable) {
-            int cps = main.cleanup.checkPerSecond;
             long delay = main.cleanup.delay * 20;
             long interval = main.cleanup.interval * 20;
-            Runnable runnable = () -> new ProtectionCleaner(main, message, repository, cps, Bukkit.getConsoleSender()).runTaskTimer(this, 0, 20);
+            Runnable cleanup = () -> {
+                if (!ProtectionCleaner.isRunning()) {
+                    new ProtectionCleaner(this, main, message, repository,
+                        main.cleanup.limit, TimeUnit.MILLISECONDS, main.cleanup.unloaded,
+                        Bukkit.getConsoleSender());
+                }
+            };
 
             if (interval > 0) {
-                getServer().getScheduler().runTaskTimer(this, runnable, delay, interval);
+                getServer().getScheduler().runTaskTimer(this, cleanup, delay, interval);
             } else {
-                getServer().getScheduler().runTaskLater(this, runnable, delay);
+                getServer().getScheduler().runTaskLater(this, cleanup, delay);
             }
         }
         // Always cancel task (to cancel cleanup command)
+        destructor.addFirst(ProtectionCleaner::cancel);
         destructor.addFirst(() -> getServer().getScheduler().cancelTasks(this));
 
         // Player action manager

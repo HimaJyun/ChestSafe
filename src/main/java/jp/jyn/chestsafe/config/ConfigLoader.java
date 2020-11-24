@@ -1,6 +1,7 @@
 package jp.jyn.chestsafe.config;
 
 import jp.jyn.chestsafe.ChestSafe;
+import jp.jyn.chestsafe.config.migrator.MainMigrator;
 import jp.jyn.jbukkitlib.config.YamlLoader;
 import org.bukkit.plugin.Plugin;
 
@@ -23,6 +24,10 @@ public class ConfigLoader {
         if (mainConfig != null || messageConfig != null) {
             mainLoader.reloadConfig();
             messageLoader.reloadConfig();
+        }
+
+        if (MainMigrator.migration(mainLoader.getConfig())) {
+            mainLoader.saveConfig();
         }
 
         mainConfig = new MainConfig(mainLoader.getConfig());

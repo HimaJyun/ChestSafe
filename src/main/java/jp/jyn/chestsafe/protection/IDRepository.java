@@ -19,8 +19,8 @@ import java.util.UUID;
 class IDRepository {
     private final IDDriver idDriver;
 
-    private final Map<String, Integer> worldToIdCache = CacheFactory.Sized.INFINITY.create();
-    private final Map<Integer, Optional<String>> idToWorldCache = CacheFactory.Sized.INFINITY.create();
+    private final Map<String, Integer> worldToIdCache = CacheFactory.INFINITY.create();
+    private final Map<Integer, Optional<String>> idToWorldCache = CacheFactory.INFINITY.create();
     private final Map<Integer, UUID> idToUUIDCache;
     private final Map<UUID, Integer> UUIDToIdCache;
     private final Map<IntLocation, OptionalInt> locationToIdCache;

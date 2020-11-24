@@ -1,5 +1,6 @@
 package jp.jyn.chestsafe.config;
 
+import jp.jyn.jbukkitlib.config.parser.template.ComponentParser;
 import jp.jyn.jbukkitlib.config.parser.template.StringParser;
 import jp.jyn.jbukkitlib.config.parser.template.TemplateParser;
 import jp.jyn.jbukkitlib.util.PackagePrivate;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class MessageConfig {
+
     private final static String PREFIX = "[ChestSafe] ";
     public final static String HEADER = "========== ChestSafe ==========";
     public final static String PLAYER_ONLY = PREFIX + ChatColor.RED + "This command can only be run by players.";
@@ -152,26 +154,26 @@ public class MessageConfig {
         /**
          * speed
          */
-        public final TemplateParser start;
+        public final ComponentParser start;
         /**
          * checked,removed
          */
-        public final TemplateParser progress;
+        public final ComponentParser progress;
         /**
          * world,x,y,z
          */
-        public final TemplateParser removed;
-        public final TemplateParser end;
-        public final TemplateParser already;
-        public final TemplateParser cancelled;
+        public final ComponentParser removed;
+        public final ComponentParser end;
+        public final ComponentParser already;
+        public final ComponentParser cancelled;
 
         private CleanupMessage(ConfigurationSection config) {
-            start = parse(config, "start");
-            progress = parse(config, "progress");
-            removed = parse(config, "removed");
-            end = parse(config, "end");
-            already = parse(config, "already");
-            cancelled = parse(config, "cancelled");
+            start = ComponentParser.parse(PREFIX + config.getString("start"));
+            progress = ComponentParser.parse(PREFIX + config.getString("progress"));
+            removed = ComponentParser.parse(PREFIX + config.getString("removed"));
+            end = ComponentParser.parse(PREFIX + config.getString("end"));
+            already = ComponentParser.parse(PREFIX + config.getString("already"));
+            cancelled = ComponentParser.parse(PREFIX + config.getString("cancelled"));
         }
     }
 
