@@ -24,6 +24,7 @@ import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.chestsafe.util.ProtectionCleaner;
 import jp.jyn.chestsafe.util.VersionChecker;
 import jp.jyn.jbukkitlib.command.SubExecutor;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
@@ -56,7 +57,7 @@ public class ChestSafe extends JavaPlugin {
         }
         config.reloadConfig();
         MainConfig main = config.getMainConfig();
-        MessageConfig message = config.getMessageConfig();
+        BukkitLocale<MessageConfig> message = config.getMessageConfig();
 
         UUIDRegistry registry = UUIDRegistry.getSharedCacheRegistry(this);
 

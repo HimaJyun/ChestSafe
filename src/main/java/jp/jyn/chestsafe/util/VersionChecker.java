@@ -2,28 +2,28 @@ package jp.jyn.chestsafe.util;
 
 import jp.jyn.chestsafe.ChestSafe;
 import jp.jyn.chestsafe.config.MessageConfig;
-import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
-import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
+import jp.jyn.jbukkitlib.config.parser.component.ComponentVariable;
 import jp.jyn.jbukkitlib.util.updater.GitHubReleaseChecker;
 import jp.jyn.jbukkitlib.util.updater.UpdateChecker;
+import net.md_5.bungee.api.chat.ClickEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 public class VersionChecker {
     private final static long CHECK_PERIOD = TimeUnit.HOURS.toMillis(12);
 
     private final boolean enable;
-    private final MessageConfig message;
+    private final BukkitLocale<MessageConfig> message;
     private final UpdateChecker checker = new GitHubReleaseChecker("HimaJyun", "ChestSafe");
 
     private long nextCheck = 0;
     private String[] result = null;
 
-    public VersionChecker(boolean enable, MessageConfig message) {
+    public VersionChecker(boolean enable, BukkitLocale<MessageConfig> message) {
         this.enable = enable;
         this.message = message;
     }
@@ -50,16 +50,16 @@ public class VersionChecker {
                 return;
             }
 
-            TemplateVariable variable = StringVariable.init()
+            ComponentVariable variable = ComponentVariable.init()
                 .put("old", currentVersion)
                 .put("new", latest.version)
-                .put("url", latest.url);
-            result = Stream.concat(
-                Stream.of(MessageConfig.HEADER),
-                message.newVersion.stream().map(parser -> parser.toString(variable))
-            ).toArray(String[]::new);
-
-            sender.sendMessage(result);
+                .put("url", c -> {
+                    c.setText(latest.url);
+                    c.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, latest.url));
+                });
+            MessageConfig m = message.get(sender);
+            sender.sendMessage(MessageConfig.HEADER);
+            m.newVersion.forEach(c -> c.apply(variable).send(sender));
         });
     }
 }

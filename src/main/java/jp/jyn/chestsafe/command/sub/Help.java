@@ -1,27 +1,45 @@
 package jp.jyn.chestsafe.command.sub;
 
 import jp.jyn.chestsafe.config.MessageConfig;
+import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.jbukkitlib.command.ErrorExecutor;
 import jp.jyn.jbukkitlib.command.SubCommand;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
+import jp.jyn.jbukkitlib.config.locale.MultiLocale;
+import jp.jyn.jbukkitlib.config.parser.component.ComponentParser;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
 public class Help extends SubCommand implements ErrorExecutor {
-    private final MessageConfig message;
+    private final BukkitLocale<MessageConfig> message;
     private final Map<String, SubCommand> commands;
 
-    public Help(MessageConfig message, Map<String, SubCommand> commands) {
+    private final BukkitLocale<Map<String, HelpInfo>> help;
+
+    public Help(BukkitLocale<MessageConfig> message, Map<String, SubCommand> commands) {
         this.message = message;
         this.commands = commands;
+
+        this.help = new MultiLocale<>(
+            message.get().locale,
+            message.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> buildHelp(e.getValue().help)))
+        );
     }
 
     @Override
@@ -29,17 +47,17 @@ public class Help extends SubCommand implements ErrorExecutor {
         CommandSender sender = error.sender;
         switch (error.cause) {
             case ERROR:
-                sendSubDetails(sender, error.subCommand);
+                details(sender, error.subArgs);
                 break;
             case UNKNOWN_COMMAND:
-                sendSubCommands(sender);
+                list(sender);
                 break;
             case DONT_HAVE_PERMISSION:
-                sender.sendMessage(message.doNotHavePermission.toString());
+                message.get(sender).doNotHavePermission.apply().send(sender);
                 break;
             case MISSING_ARGUMENT:
-                sender.sendMessage(message.missingArgument.toString());
-                sendSubDetails(sender, error.subCommand);
+                message.get(sender).missingArgument.apply().send(sender);
+                details(sender, error.subArgs);
                 break;
             case PLAYER_ONLY:
                 sender.sendMessage(MessageConfig.PLAYER_ONLY);
@@ -53,18 +71,16 @@ public class Help extends SubCommand implements ErrorExecutor {
 
     @Override
     protected Result onCommand(CommandSender sender, Queue<String> args) {
-        // search detail help.
-        SubCommand cmd = null;
+        // search help info.
+        HelpInfo info = null;
         if (!args.isEmpty()) {
-            cmd = commands.get(
-                args.remove().toLowerCase(Locale.ENGLISH)
-            );
+            info = help.get(sender).get(args.remove().toLowerCase(Locale.ENGLISH));
         }
 
-        if (cmd == null) {
-            sendSubCommands(sender);
+        if (info == null) {
+            list(sender);
         } else {
-            sendSubDetails(sender, cmd);
+            details(sender, info);
         }
         return Result.OK;
     }
@@ -80,42 +96,193 @@ public class Help extends SubCommand implements ErrorExecutor {
         return Collections.emptyList();
     }
 
-    @Override
-    public CommandHelp getHelp() {
-        return new CommandHelp(
-            "/chestsafe help [command]",
-            message.help.help.toString(),
-            "/chestsafe help",
-            "/chestsafe help private");
-    }
-
-    private void sendSubCommands(CommandSender sender) {
-        String[] messages = commands.values()
-            .stream()
-            .map(SubCommand::getHelp)
-            .filter(Objects::nonNull)
-            .map(help -> help.usage + " - " + help.description)
-            .toArray(String[]::new);
+    private void list(CommandSender sender) {
+        Map<String, HelpInfo> m = help.get(sender);
 
         sender.sendMessage(MessageConfig.HEADER);
-        sender.sendMessage(messages);
+
+        // commandsに追加された順番(SubExecutorはLinkedHashMapになってる)で使用したいのでこうする
+        for (String key : commands.keySet()) {
+            HelpInfo info = m.get(key);
+            if (info != null) {
+                sender.spigot().sendMessage(info.help);
+            }
+        }
     }
 
-    private void sendSubDetails(CommandSender sender, SubCommand cmd) {
-        CommandHelp help = cmd.getHelp();
-        if (help == null) {
-            return;
+    private void details(CommandSender sender, HelpInfo info) {
+        CommandSender.Spigot s = sender.spigot();
+        sender.sendMessage(MessageConfig.HEADER);
+        for (TextComponent[] details : info.details) {
+            s.sendMessage(details);
+        }
+    }
+
+    private void details(CommandSender sender, String command) {
+        HelpInfo info = help.get(sender).get(command);
+        if (info != null) {
+            details(sender, info);
+        }
+    }
+
+    private Map<String, HelpInfo> buildHelp(MessageConfig.HelpMessage msg) {
+        HashMap<String, HelpInfo> m = new HashMap<>();
+        HelpBuilder builder = new HelpBuilder(msg.example, msg.run, msg.details);
+
+        builder.command("public").description(msg.public_).put(m);
+        builder.command("remove").description(msg.remove).put(m);
+        builder.command("info").description(msg.info).put(m);
+        builder.command("reload").description(msg.reload).put(m);
+        builder.command("version").description(msg.version).put(m);
+
+        builder.command("private").option("[member]").description(msg.private_).usage("", "member1", "member1 member2").put(m);
+        builder.command("transfer").option("<owner>").description(msg.transfer).usage("new_owner").put(m);
+        builder.command("cleanup").option("[limit]").description(msg.cleanup).usage("", "100", "cancel").put(m);
+        builder.command("help").option("[command]").description(msg.help).usage("", "private").put(m);
+
+        builder.command("member").option("<operator> [value]").description(msg.member)
+            .usageSuggest("member add", "member1")
+            .usageSuggest("member remove", "member1")
+            .usageSuggest("member modify", "member1 -member2")
+            .put(m);
+        builder.command("persist").option("[true/false]").description(msg.persist)
+            .usageSuggest("persist", "")
+            .usageSuggest("persist true", "")
+            .usageSuggest("persist false", "")
+            .put(m);
+
+        TextComponent[] flags = msg.availableFlags.apply("flags", c -> {
+            c.setText("");
+            List<BaseComponent> extra = new ArrayList<>((Protection.Flag.values().length * 2) - 1);
+            boolean f = false;
+            for (Protection.Flag flag : Protection.Flag.values()) {
+                if (f) {
+                    extra.add(new TextComponent(", "));
+                } else {
+                    f = true;
+                }
+                String name = flag.name().toLowerCase(Locale.ENGLISH);
+                TextComponent component = new TextComponent(name);
+                component.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, HelpBuilder.BASE_COMMAND + "flag " + name));
+                component.setHoverEvent(builder.hoverSuggest);
+                extra.add(component);
+            }
+            c.setExtra(extra);
+        }).toTextComponent();
+        builder.command("flag").option("<flag> [value]").description(msg.flag)
+            .usage("hopper true", "explosion remove", "redstone")
+            .usage(flags)
+            .put(m);
+
+        return Collections.unmodifiableMap(m);
+    }
+
+    private final static class HelpInfo {
+        private final TextComponent[] help;
+        private final TextComponent[][] details;
+
+        private HelpInfo(TextComponent[] help, TextComponent[][] details) {
+            this.help = help;
+            this.details = details;
+        }
+    }
+
+
+    private final static class HelpBuilder {
+        private final static String BASE_COMMAND = "/chestsafe ";
+        private final static TextComponent EMPTY = new TextComponent();
+        private final static TextComponent SEPARATOR = new TextComponent(" - ");
+
+        private final List<TextComponent[]> details = new ArrayList<>();
+        private final TextComponent[] example;
+        private final HoverEvent hoverSuggest;
+        private final HoverEvent hoverDetails;
+        private final List<TextComponent[]> usage = new ArrayList<>();
+        private String command;
+        private String option;
+        private TextComponent[] description;
+        private String fullCommand;
+
+        private HelpBuilder(ComponentParser example, ComponentParser suggest, ComponentParser details) {
+            this.example = example.apply().toTextComponent();
+            this.hoverSuggest = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(suggest.apply().toTextComponent()));
+            this.hoverDetails = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(details.apply().toTextComponent()));
         }
 
-        sender.sendMessage(MessageConfig.HEADER);
-        sender.sendMessage(help.usage);
-        sender.sendMessage(help.description);
-        if (help.example.length != 0) {
-            sender.sendMessage("");
-            sender.sendMessage(message.help.example.toString());
-            for (String ex : help.example) {
-                sender.sendMessage(ex);
+        private HelpBuilder command(String command) {
+            this.command = command;
+            this.fullCommand = BASE_COMMAND + command;
+            return this;
+        }
+
+        private HelpBuilder option(String option) {
+            this.option = option;
+            return this;
+        }
+
+        private HelpBuilder description(ComponentParser description) {
+            this.description = description.apply().toTextComponent();
+            return this;
+        }
+
+        private HelpBuilder usage(TextComponent... component) {
+            this.usage.add(component);
+            return this;
+        }
+
+        private HelpBuilder usage(String... usage) {
+            for (String e : usage) {
+                this.usage.add(new TextComponent[]{new TextComponent(e.length() == 0 ? fullCommand : fullCommand + " " + e)});
             }
+            return this;
+        }
+
+        private HelpBuilder usageSuggest(String suggest, String option) {
+            String cmd = fullCommand + suggest;
+            TextComponent c = new TextComponent(cmd);
+            c.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, option.length() == 0 ? cmd : cmd + " " + option));
+            c.setHoverEvent(hoverSuggest);
+            usage.add(new TextComponent[]{c});
+            return this;
+        }
+
+        private HelpBuilder clear() {
+            command = null;
+            option = null;
+            description = null;
+            usage.clear();
+            details.clear();
+
+            fullCommand = null;
+
+            return this;
+        }
+
+        private HelpInfo build() {
+            TextComponent c = new TextComponent(option == null ? fullCommand : fullCommand + " " + option);
+            c.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, fullCommand));
+            c.setHoverEvent(hoverSuggest);
+
+            TextComponent[] help = new TextComponent[]{c, SEPARATOR, new TextComponent()};
+            help[2].setExtra(Arrays.asList(description));
+            help[2].setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, BASE_COMMAND + "help " + command));
+            help[2].setHoverEvent(hoverDetails);
+
+            details.add(new TextComponent[]{c});
+            details.add(description);
+            if (!usage.isEmpty()) {
+                details.add(new TextComponent[]{EMPTY});
+                details.add(example);
+                details.addAll(usage);
+            }
+
+            return new HelpInfo(help,details.toArray(new TextComponent[0][0]));
+        }
+
+        private HelpBuilder put(Map<String, HelpInfo> map) {
+            map.put(command, build());
+            clear();
+            return this;
         }
     }
 }

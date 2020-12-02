@@ -7,8 +7,8 @@ import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.jbukkitlib.command.SubCommand;
-import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
-import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
+import jp.jyn.jbukkitlib.config.parser.component.ComponentVariable;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -26,23 +26,16 @@ import java.util.stream.Stream;
 public class Flag extends SubCommand {
     private enum Value {TRUE, FALSE, REVERSE, REMOVE}
 
-    private final String availableFlags;
-
     private final MainConfig config;
-    private final MessageConfig message;
+    private final BukkitLocale<MessageConfig> message;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
-    public Flag(MainConfig config, MessageConfig message, ProtectionRepository repository, PlayerAction action) {
+    public Flag(MainConfig config, BukkitLocale<MessageConfig> message, ProtectionRepository repository, PlayerAction action) {
         this.config = config;
         this.message = message;
         this.repository = repository;
         this.action = action;
-
-        this.availableFlags = message.help.availableFlags.toString(
-            "flags",
-            Arrays.stream(Protection.Flag.values()).map(Enum::name).map(str -> str.toLowerCase(Locale.ENGLISH)).collect(Collectors.joining(", "))
-        );
     }
 
     @Override
@@ -54,24 +47,24 @@ public class Flag extends SubCommand {
         try {
             flag = Protection.Flag.valueOf(tmp.toUpperCase(Locale.ENGLISH));
         } catch (IllegalArgumentException e) {
-            player.sendMessage(message.invalidArgument.toString("value", tmp));
+            message.get(player).invalidArgument.apply("value",tmp).send(player);
             return Result.ERROR;
         }
 
         // permission
         if (!player.hasPermission("chestsafe.flag." + flag.name().toLowerCase(Locale.ENGLISH))) {
-            player.sendMessage(message.doNotHavePermission.toString());
+            message.get(player).doNotHavePermission.apply().send(player);
             return Result.OK;
         }
 
         Value value = parseValue(args.peek());
         if (value == null) {
-            player.sendMessage(message.invalidArgument.toString("value", args.peek()));
+            message.get(player).invalidArgument.apply("value",args.peek()).send(player);
             return Result.ERROR;
         }
 
         action.setAction(player, b -> setFlag(player, b, flag, value));
-        player.sendMessage(message.ready.toString());
+        message.get(player).ready.apply().send(player);
         return Result.OK;
     }
 
@@ -100,7 +93,7 @@ public class Flag extends SubCommand {
     }
 
     private void setFlag(Player player, Block block, Protection.Flag flag, Value value) {
-        TemplateVariable variable = StringVariable.init();
+        ComponentVariable variable = ComponentVariable.init();
         Optional<Protection> optional = CommandUtils.checkProtection(message, repository, player, block, variable);
         if (!optional.isPresent()) {
             return;
@@ -133,7 +126,7 @@ public class Flag extends SubCommand {
 
         // send message
         variable.put("value", newValue).put("flag", flag.name().toLowerCase(Locale.ENGLISH));
-        player.sendMessage(message.flagSet.toString(variable));
+        message.get(player).flagSet.apply(variable).send(player);
     }
 
     @Override
@@ -163,17 +156,5 @@ public class Flag extends SubCommand {
     @Override
     protected int minimumArgs() {
         return 1;
-    }
-
-    @Override
-    public CommandHelp getHelp() {
-        return new CommandHelp(
-            "/chestsafe flag <flag> [value]",
-            message.help.flag.toString(),
-            "/chestsafe flag hopper true",
-            "/chestsafe flag explosion remove",
-            "/chestsafe flag redstone",
-            availableFlags
-        );
     }
 }

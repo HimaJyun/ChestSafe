@@ -35,5 +35,8 @@ public class MainMigrator {
     private static void v1to2(ConfigurationSection config) {
         config.set("cleanup.checkPerSecond", null);
         config.set("cleanup.checkMs", 50);
+
+        config.set("locale.enable", true);
+        config.set("locale.default", "eu_us");
     }
 }

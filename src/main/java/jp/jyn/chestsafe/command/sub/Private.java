@@ -6,6 +6,7 @@ import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.jbukkitlib.command.SubCommand;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,12 +19,12 @@ import java.util.Set;
 import java.util.UUID;
 
 public class Private extends SubCommand {
-    private final MessageConfig message;
+    private final BukkitLocale<MessageConfig> message;
     private final UUIDRegistry registry;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
-    public Private(MessageConfig message, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
+    public Private(BukkitLocale<MessageConfig> message, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
         this.message = message;
         this.registry = registry;
         this.repository = repository;
@@ -41,7 +42,7 @@ public class Private extends SubCommand {
                 String name = args.remove();
                 UUID uuid = map.get(name);
                 if (uuid == null) {
-                    player.sendMessage(message.playerNotFound.toString("name", name));
+                    message.get(player).playerNotFound.apply("name",name).send(player);
                     return;
                 }
                 members.add(uuid);
@@ -55,7 +56,7 @@ public class Private extends SubCommand {
                     .setOwner(player)
                     .addMembers(members)
             ));
-            player.sendMessage(message.ready.toString());
+            message.get(player).ready.apply().send(player);
         });
         return Result.OK;
     }
@@ -73,16 +74,5 @@ public class Private extends SubCommand {
     @Override
     protected boolean isPlayerOnly() {
         return true;
-    }
-
-    @Override
-    public CommandHelp getHelp() {
-        return new CommandHelp(
-            "/chestsafe private [member]",
-            message.help.private_.toString(),
-            "/chestsafe private",
-            "/chestsafe private member1",
-            "/chestsafe private member1 member2"
-        );
     }
 }

@@ -5,7 +5,8 @@ import jp.jyn.chestsafe.config.MainConfig;
 import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.protection.ProtectionRepository.CheckElement;
-import jp.jyn.jbukkitlib.config.parser.template.variable.ComponentVariable;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
+import jp.jyn.jbukkitlib.config.parser.component.ComponentVariable;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -54,10 +55,10 @@ public class ProtectionCleaner implements Runnable {
     private final AtomicInteger checkPerCycle = new AtomicInteger(DEFAULT_CHECK_SIZE);
     private final Queue<CheckElement> queue = new ArrayDeque<>(DEFAULT_CHECK_SIZE);
 
-    public ProtectionCleaner(Plugin plugin, MainConfig config, MessageConfig message, ProtectionRepository repository,
+    public ProtectionCleaner(Plugin plugin, MainConfig config, BukkitLocale<MessageConfig> message, ProtectionRepository repository,
                              long limit, TimeUnit unit, boolean unloaded, CommandSender... senders) {
         this.plugin = plugin;
-        this.message = message.cleanup;
+        this.message = message.get().cleanup;
         this.repository = repository;
         this.unloaded = unloaded;
         this.senders.addAll(Arrays.asList(senders));
@@ -82,7 +83,7 @@ public class ProtectionCleaner implements Runnable {
         if (!RUNNING.compareAndSet(null, this)) {
             throw new IllegalStateException("Already running.");
         }
-        this.message.start.send(variable, this.senders);
+        this.message.start.apply(variable).send(this.senders);
         executor.scheduleAtFixedRate(this, 1, 1, TimeUnit.SECONDS);
     }
 
@@ -116,7 +117,7 @@ public class ProtectionCleaner implements Runnable {
         int co = count.incrementAndGet();
         BigDecimal avg = average = BigDecimal.valueOf(ced).divide(BigDecimal.valueOf(co), MathContext.DECIMAL64);
         // 途中経過
-        message.progress.send(variable, senders);
+        message.progress.apply(variable).send(senders);
 
         // チェック数の自動調整 (許容時間/(処理時間/処理数=1個辺りの所要時間)=許容時間内に処理できる数)
         BigDecimal timePerCheck = BigDecimal.valueOf(time).divide(BigDecimal.valueOf(check), MathContext.DECIMAL64);
@@ -158,7 +159,7 @@ public class ProtectionCleaner implements Runnable {
                 x.set(e.x);
                 y.set(e.y);
                 z.set(e.z);
-                message.removed.send(variable, senders);
+                message.removed.apply(variable).send(senders);
             }
 
             long elapsed = System.nanoTime() - start;
@@ -189,9 +190,9 @@ public class ProtectionCleaner implements Runnable {
         old.executor.shutdown();
 
         if (old.finished()) {
-            old.message.end.send(old.variable, old.senders);
+            old.message.end.apply(old.variable).send(old.senders);
         } else {
-            old.message.cancelled.send(old.variable, old.senders);
+            old.message.cancelled.apply(old.variable).send(old.senders);
         }
         return true;
     }

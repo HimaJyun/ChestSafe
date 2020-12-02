@@ -3,8 +3,8 @@ package jp.jyn.chestsafe.command;
 import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
-import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
-import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
+import jp.jyn.jbukkitlib.config.parser.component.ComponentVariable;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -50,39 +50,39 @@ public class CommandUtils {
             .collect(Collectors.toList());
     }
 
-    public static void setProtection(MessageConfig message, ProtectionRepository repository,
+    public static void setProtection(BukkitLocale<MessageConfig> message, ProtectionRepository repository,
                                      Player player, Block block, Protection protection) {
         ProtectionRepository.Result result = repository.set(protection, block);
 
-        TemplateVariable variable = StringVariable.init().put("block", block.getType());
+        ComponentVariable variable = ComponentVariable.init().put("block", block.getType());
         switch (result) {
             case NOT_PROTECTABLE:
-                player.sendMessage(message.notProtectable.toString(variable));
+                message.get(player).notProtectable.apply("block", block.getType()).send(player);
                 break;
             case ALREADY_PROTECTED:
-                player.sendMessage(message.alreadyProtected.toString(variable));
+                message.get(player).alreadyProtected.apply("block", block.getType()).send(player);
                 break;
             case SUCCESS:
                 variable.put("type", protection.getType());
-                player.sendMessage(message.protected_.toString(variable));
+                message.get(player).protected_.apply(variable).send(player);
                 break;
         }
     }
 
-    public static Optional<Protection> checkProtection(MessageConfig message, ProtectionRepository repository,
-                                                       Player player, Block block, TemplateVariable variable) {
+    public static Optional<Protection> checkProtection(BukkitLocale<MessageConfig> message, ProtectionRepository repository,
+                                                       Player player, Block block, ComponentVariable variable) {
         variable.put("block", block.getType());
 
         Protection protection = repository.get(block).orElse(null);
         if (protection == null) {
-            player.sendMessage(message.notProtected.toString(variable));
+            message.get(player).notProtected.apply(variable).send(player);
             return Optional.empty();
         }
         variable.put("type", protection.getType());
 
         if (!protection.isOwner(player) &&
             !player.hasPermission("chestsafe.passthrough")) {
-            player.sendMessage(message.denied.toString(variable));
+            message.get(player).denied.apply(variable).send(player);
             return Optional.empty();
         }
         return Optional.of(protection);

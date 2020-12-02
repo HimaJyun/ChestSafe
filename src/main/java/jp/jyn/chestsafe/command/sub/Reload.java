@@ -3,7 +3,7 @@ package jp.jyn.chestsafe.command.sub;
 import jp.jyn.chestsafe.ChestSafe;
 import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.jbukkitlib.command.SubCommand;
-import org.bukkit.Bukkit;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.server.PluginDisableEvent;
@@ -13,9 +13,9 @@ import org.bukkit.plugin.Plugin;
 import java.util.Queue;
 
 public class Reload extends SubCommand {
-    private final MessageConfig message;
+    private final BukkitLocale<MessageConfig> message;
 
-    public Reload(MessageConfig message) {
+    public Reload(BukkitLocale<MessageConfig> message) {
         this.message = message;
     }
 
@@ -28,9 +28,9 @@ public class Reload extends SubCommand {
         plugin.onEnable();
         plugin.getServer().getPluginManager().callEvent(new PluginEnableEvent(plugin));
 
-        sender.sendMessage(message.reloaded.toString());
+        message.get(sender).reloaded.apply().send(sender);
         if (sender instanceof Player) {
-            Bukkit.getConsoleSender().sendMessage(message.reloaded.toString());
+            message.get().reloaded.apply().console();
         }
         return Result.OK;
     }
@@ -38,13 +38,5 @@ public class Reload extends SubCommand {
     @Override
     protected String requirePermission() {
         return "chestsafe.reload";
-    }
-
-    @Override
-    public CommandHelp getHelp() {
-        return new CommandHelp(
-            "/chestsafe reload",
-            message.help.reload.toString()
-        );
     }
 }

@@ -5,8 +5,8 @@ import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.jbukkitlib.command.SubCommand;
-import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
-import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
+import jp.jyn.jbukkitlib.config.parser.component.ComponentVariable;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -28,12 +28,12 @@ import java.util.stream.Stream;
 public class Member extends SubCommand {
     private enum Operation {ADD, REMOVE}
 
-    private final MessageConfig message;
+    private final BukkitLocale<MessageConfig> message;
     private final UUIDRegistry registry;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
-    public Member(MessageConfig message, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
+    public Member(BukkitLocale<MessageConfig> message, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
         this.message = message;
         this.registry = registry;
         this.repository = repository;
@@ -62,7 +62,7 @@ public class Member extends SubCommand {
                         operation = Operation.REMOVE;
                         value = value.substring(1);
                         if (value.isEmpty()) {
-                            player.sendMessage(message.invalidArgument.toString("value", "-"));
+                            message.get(player).invalidArgument.apply("value","-").send(player);
                             return Result.ERROR;
                         }
                     }
@@ -70,7 +70,7 @@ public class Member extends SubCommand {
                 }
                 break;
             default:
-                player.sendMessage(message.invalidArgument.toString("value", tmp));
+                message.get(player).invalidArgument.apply("value",tmp).send(player);
                 return Result.ERROR;
         }
 
@@ -82,7 +82,7 @@ public class Member extends SubCommand {
             for (Map.Entry<String, Operation> entry : members.entrySet()) {
                 UUID uuid = map.get(entry.getKey());
                 if (uuid == null) {
-                    player.sendMessage(message.playerNotFound.toString("name", entry.getKey()));
+                    message.get(player).playerNotFound.apply("name",entry.getKey()).send(player);
                     return;
                 }
 
@@ -97,13 +97,13 @@ public class Member extends SubCommand {
             }
 
             action.setAction(player, b -> modifyMember(player, b, add, remove));
-            player.sendMessage(message.ready.toString());
+            message.get(player).ready.apply().send(player);
         });
         return Result.OK;
     }
 
     private void modifyMember(Player player, Block block, Collection<UUID> add, Collection<UUID> remove) {
-        TemplateVariable variable = StringVariable.init();
+        ComponentVariable variable = ComponentVariable.init();
         CommandUtils.checkProtection(message, repository, player, block, variable).ifPresent(protection -> {
             if (!add.isEmpty()) {
                 protection.addMembers(add);
@@ -111,7 +111,7 @@ public class Member extends SubCommand {
             if (!remove.isEmpty()) {
                 protection.removeMembers(remove);
             }
-            player.sendMessage(message.memberChanged.toString(variable));
+            message.get(player).memberChanged.apply(variable).send(player);
         });
     }
 
@@ -140,16 +140,5 @@ public class Member extends SubCommand {
     @Override
     protected int minimumArgs() {
         return 1;
-    }
-
-    @Override
-    public CommandHelp getHelp() {
-        return new CommandHelp(
-            "/chestsafe member <add/remove/modify> [value]",
-            message.help.member.toString(),
-            "/chestsafe member add member1",
-            "/chestsafe member remove member1",
-            "/chestsafe member modify member1 -member2"
-        );
     }
 }

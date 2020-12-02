@@ -29,6 +29,9 @@ public class MainConfig {
     public final boolean actionBar;
     public final boolean versionCheck;
 
+    public final boolean localeEnable;
+    public final String localeDefault;
+
     public final Map<Material, ProtectionConfig> protectable = new EnumMap<>(Material.class);
 
     public final CleanupConfig cleanup;
@@ -39,6 +42,9 @@ public class MainConfig {
     MainConfig(FileConfiguration config) {
         actionBar = config.getBoolean("actionBar");
         versionCheck = config.getBoolean("versionCheck");
+
+        localeEnable = config.getBoolean("locale.enable");
+        localeDefault = config.getString("locale.default");
 
         ProtectionConfig defaultValue = new ProtectionConfig(config.getConfigurationSection("default"));
         for (Protection.Flag flag : Protection.Flag.values()) {
@@ -54,7 +60,6 @@ public class MainConfig {
                 }
             }
         }
-
 
         cleanup = new CleanupConfig(config.getConfigurationSection("cleanup"));
         database = new DatabaseConfig(config.getConfigurationSection("database"));

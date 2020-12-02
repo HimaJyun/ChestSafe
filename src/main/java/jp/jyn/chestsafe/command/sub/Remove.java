@@ -5,8 +5,8 @@ import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.jbukkitlib.command.SubCommand;
-import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
-import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
+import jp.jyn.jbukkitlib.config.parser.component.ComponentVariable;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -14,11 +14,11 @@ import org.bukkit.entity.Player;
 import java.util.Queue;
 
 public class Remove extends SubCommand {
-    private final MessageConfig message;
+    private final BukkitLocale<MessageConfig> message;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
-    public Remove(MessageConfig message, ProtectionRepository repository, PlayerAction action) {
+    public Remove(BukkitLocale<MessageConfig> message, ProtectionRepository repository, PlayerAction action) {
         this.message = message;
         this.repository = repository;
         this.action = action;
@@ -29,15 +29,15 @@ public class Remove extends SubCommand {
         Player player = (Player) sender;
 
         action.setAction(player, block -> removeProtection(player, block));
-        player.sendMessage(message.ready.toString());
+        message.get(player).ready.apply().send(player);
         return Result.OK;
     }
 
     private void removeProtection(Player player, Block block) {
-        TemplateVariable variable = StringVariable.init();
+        ComponentVariable variable = ComponentVariable.init();
         CommandUtils.checkProtection(message, repository, player, block, variable).ifPresent(protection -> {
             repository.remove(protection);
-            player.sendMessage(message.removed.toString(variable));
+            message.get(player).removed.apply(variable).send(player);
         });
     }
 
@@ -49,13 +49,5 @@ public class Remove extends SubCommand {
     @Override
     protected String requirePermission() {
         return "chestsafe.remove";
-    }
-
-    @Override
-    public CommandHelp getHelp() {
-        return new CommandHelp(
-            "/chestsafe remove",
-            message.help.remove.toString()
-        );
     }
 }

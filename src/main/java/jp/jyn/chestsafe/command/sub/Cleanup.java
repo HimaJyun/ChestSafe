@@ -6,6 +6,7 @@ import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.ProtectionCleaner;
 import jp.jyn.jbukkitlib.command.SubCommand;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,10 +19,10 @@ import java.util.concurrent.TimeUnit;
 
 public class Cleanup extends SubCommand {
     private final MainConfig config;
-    private final MessageConfig message;
+    private final BukkitLocale<MessageConfig> message;
     private final ProtectionRepository repository;
 
-    public Cleanup(MainConfig config, MessageConfig message, ProtectionRepository repository) {
+    public Cleanup(MainConfig config, BukkitLocale<MessageConfig> message, ProtectionRepository repository) {
         this.config = config;
         this.message = message;
         this.repository = repository;
@@ -38,7 +39,7 @@ public class Cleanup extends SubCommand {
                 ProtectionCleaner.addSender(sender);
                 if (!ProtectionCleaner.cancel()) {
                     // 何もメッセージが出ないのも不自然なので適当に出しておく
-                    message.cleanup.cancelled.send(sender);
+                    message.get(sender).cleanup.cancelled.apply().send(sender);
                 }
                 return Result.OK;
             }
@@ -46,18 +47,18 @@ public class Cleanup extends SubCommand {
             // limit
             try {
                 limit = Integer.parseInt(value);
-                if(limit >= 1000 || limit <= 0) {
-                    sender.sendMessage(message.invalidArgument.toString("value",value));
+                if (limit >= 1000 || limit <= 0) {
+                    message.get(sender).invalidArgument.apply("value", value).send(sender);
                     return Result.ERROR;
                 }
             } catch (NumberFormatException e) {
-                sender.sendMessage(message.invalidArgument.toString("value", value));
+                message.get(sender).invalidArgument.apply("value", value).send(sender);
                 return Result.ERROR;
             }
         }
 
         if (ProtectionCleaner.isRunning()) {
-            message.cleanup.already.send(sender);
+            message.get(sender).cleanup.already.apply().send(sender);
             return Result.OK;
         }
 
@@ -84,16 +85,5 @@ public class Cleanup extends SubCommand {
     @Override
     protected String requirePermission() {
         return "chestsafe.cleanup";
-    }
-
-    @Override
-    public CommandHelp getHelp() {
-        return new CommandHelp(
-            "/chestsafe cleanup [limit]",
-            message.help.cleanup.toString(),
-            "/chestsafe cleanup",
-            "/chestsafe cleanup 100",
-            "/chestsafe cleanup cancel"
-        );
     }
 }

@@ -5,8 +5,8 @@ import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.jbukkitlib.command.SubCommand;
-import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
-import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
+import jp.jyn.jbukkitlib.config.parser.component.ComponentVariable;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -20,12 +20,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class Info extends SubCommand {
-    private final MessageConfig message;
+    private final BukkitLocale<MessageConfig> message;
     private final UUIDRegistry registry;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
-    public Info(MessageConfig message, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
+    public Info(BukkitLocale<MessageConfig> message, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
         this.message = message;
         this.registry = registry;
         this.repository = repository;
@@ -37,14 +37,14 @@ public class Info extends SubCommand {
         Player player = (Player) sender;
 
         action.setAction(player, block -> showInfo(player, block));
-        player.sendMessage(message.ready.toString());
+        message.get(player).ready.apply().send(player);
         return Result.OK;
     }
 
     private void showInfo(Player player, Block block) {
         Protection protection = repository.get(block).orElse(null);
         if (protection == null) {
-            player.sendMessage(message.notProtected.toString("block", block.getType()));
+            message.get(player).notProtected.apply("block",block.getType()).send(player);
             return;
         }
 
@@ -53,7 +53,7 @@ public class Info extends SubCommand {
         request.add(protection.getOwner());
         registry.getMultipleNameAsync(request).thenAcceptSync(map -> {
             // set variable
-            TemplateVariable variable = StringVariable.init()
+            ComponentVariable variable = ComponentVariable.init()
                 .put("type", protection.getType().name())
                 .put("owner", map.get(protection.getOwner()))
                 .put("uuid", protection.getOwner())
@@ -69,7 +69,7 @@ public class Info extends SubCommand {
                 );
 
             player.sendMessage(MessageConfig.HEADER);
-            message.info.forEach(msg -> player.sendMessage(msg.toString(variable)));
+            message.get(player).info.forEach(c -> c.apply(variable).send(player));
         });
     }
 
@@ -81,13 +81,5 @@ public class Info extends SubCommand {
     @Override
     protected String requirePermission() {
         return "chestsafe.info";
-    }
-
-    @Override
-    public CommandHelp getHelp() {
-        return new CommandHelp(
-            "/chestsafe info",
-            message.help.info.toString()
-        );
     }
 }

@@ -4,6 +4,7 @@ import jp.jyn.chestsafe.command.CommandUtils;
 import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.jbukkitlib.command.SubCommand;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -15,17 +16,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Persist extends SubCommand {
-    private final MessageConfig message;
+    private final BukkitLocale<MessageConfig> message;
     private final PlayerAction action;
 
-    public Persist(MessageConfig message, PlayerAction action) {
+    public Persist(BukkitLocale<MessageConfig> message, PlayerAction action) {
         this.message = message;
         this.action = action;
     }
 
     @Override
     protected Result onCommand(CommandSender sender, Queue<String> args) {
-        Player player = (Player)sender;
+        Player player = (Player) sender;
 
         boolean persist = action.getPersist(player);
 
@@ -37,16 +38,16 @@ public class Persist extends SubCommand {
             try {
                 persist = CommandUtils.str2Bool(value);
             } catch (IllegalArgumentException e) {
-                player.sendMessage(message.invalidArgument.toString("value", value));
+                message.get(player).invalidArgument.apply("value", value).send(player);
                 return Result.ERROR;
             }
         }
 
         action.setPersist(player, persist);
         if (persist) {
-            player.sendMessage(message.persistEnabled.toString());
+            message.get(player).persistEnabled.apply().send(player);
         } else {
-            player.sendMessage(message.persistDisabled.toString());
+            message.get(player).persistDisabled.apply().send(player);
         }
 
         return Result.OK;
@@ -68,15 +69,5 @@ public class Persist extends SubCommand {
     @Override
     protected String requirePermission() {
         return "chestsafe.persist";
-    }
-
-    @Override
-    public CommandHelp getHelp() {
-        return new CommandHelp(
-            "/chestsafe persist [value]",
-            message.help.persist.toString(),
-            "/chestsafe persist",
-            "/chestsafe persist true"
-        );
     }
 }

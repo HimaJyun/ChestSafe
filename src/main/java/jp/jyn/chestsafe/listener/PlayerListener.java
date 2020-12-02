@@ -8,9 +8,10 @@ import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.chestsafe.util.VersionChecker;
 import jp.jyn.chestsafe.util.normalizer.ChestNormalizer;
-import jp.jyn.jbukkitlib.config.parser.template.TemplateParser;
-import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
-import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
+import jp.jyn.jbukkitlib.config.parser.component.Component;
+import jp.jyn.jbukkitlib.config.parser.component.ComponentParser;
+import jp.jyn.jbukkitlib.config.parser.component.ComponentVariable;
 import jp.jyn.jbukkitlib.util.ActionBarSender;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.Bukkit;
@@ -33,6 +34,8 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public class PlayerListener implements Listener {
@@ -47,14 +50,10 @@ public class PlayerListener implements Listener {
     private final Map<Material, MainConfig.ProtectionConfig> protectable;
     private final boolean useActionBar;
 
-    private final TemplateParser notice, denied, protected_, removed;
-    private final Sender sender;
+    private final Function<Player, ComponentParser> notice, denied, protected_, removed;
+    private final BiConsumer<Player, Component> sender;
 
-    private interface Sender {
-        void send(Player player, String message);
-    }
-
-    public PlayerListener(MainConfig config, MessageConfig message,
+    public PlayerListener(MainConfig config, BukkitLocale<MessageConfig> message,
                           UUIDRegistry registry, VersionChecker checker,
                           ProtectionRepository repository, PlayerAction action) {
         this.plugin = ChestSafe.getInstance();
@@ -66,26 +65,26 @@ public class PlayerListener implements Listener {
 
         this.useActionBar = config.actionBar;
         if (config.actionBar) {
-            notice = message.actionbar.notice;
-            denied = message.actionbar.denied;
-            protected_ = message.actionbar.protected_;
-            removed = message.actionbar.removed;
+            notice = p -> message.get(p).actionbar.notice;
+            denied = p -> message.get(p).actionbar.denied;
+            protected_ = p -> message.get(p).actionbar.protected_;
+            removed = p -> message.get(p).actionbar.removed;
 
             ActionBarSender actionbar = new ActionBarSender();
-            sender = (p, m) -> {
+            sender = (p, c) -> {
                 if (p.hasPermission("chestsafe.notice")) {
-                    actionbar.send(p, m);
+                    c.actionbar(p);
                 }
             };
         } else {
-            notice = message.notice;
-            denied = message.denied;
-            protected_ = message.protected_;
-            removed = message.removed;
+            notice = p -> message.get(p).notice;
+            denied = p -> message.get(p).denied;
+            protected_ = p -> message.get(p).protected_;
+            removed = p -> message.get(p).removed;
 
-            sender = (p, m) -> {
+            sender = (p, c) -> {
                 if (p.hasPermission("chestsafe.notice")) {
-                    p.sendMessage(m);
+                    c.send(p);
                 }
             };
         }
@@ -122,7 +121,7 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        TemplateVariable variable = StringVariable.init()
+        ComponentVariable variable = ComponentVariable.init()
             .put("block", block.getType())
             .put("type", protection.getType());
 
@@ -132,14 +131,14 @@ public class PlayerListener implements Listener {
             !isPassthrough(player)) {
             e.setUseInteractedBlock(Event.Result.DENY);
             e.setCancelled(true);
-            sender.send(player, denied.toString(variable));
+            sender.accept(player, denied.apply(player).apply(variable));
             return;
         }
 
         variable.put("uuid", protection.getOwner());
-        registry.getNameAsync(protection.getOwner()).thenAcceptSync(name -> sender.send(
+        registry.getNameAsync(protection.getOwner()).thenAcceptSync(name -> sender.accept(
             player,
-            notice.toString(variable.put("name", name.orElse("Unknown")))
+            notice.apply(player).apply(variable.put("name", name.orElse("Unknown")))
         ));
     }
 
@@ -158,12 +157,11 @@ public class PlayerListener implements Listener {
         Player player = e.getPlayer();
         if (!protection.isOwner(player) && !isPassthrough(player)) {
             e.setCancelled(true);
-            sender.send(
+            sender.accept(
                 e.getPlayer(),
-                denied.toString(
-                    StringVariable.init()
-                        .put("block", block.getType())
-                        .put("type", protection.getType())
+                denied.apply(e.getPlayer()).apply(ComponentVariable.init()
+                    .put("block", block.getType())
+                    .put("type", protection.getType())
                 )
             );
             return;
@@ -183,12 +181,11 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        sender.send(
+        sender.accept(
             e.getPlayer(),
-            removed.toString(
-                StringVariable.init()
-                    .put("block", block.getType())
-                    .put("type", protection.getType())
+            removed.apply(e.getPlayer()).apply(ComponentVariable.init()
+                .put("block", block.getType())
+                .put("type", protection.getType())
             )
         );
     }
@@ -237,9 +234,13 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        sender.send(
+        sender.accept(
             player,
-            protected_.toString(StringVariable.init().put("block", block.getType()).put("type", protection.getType()))
+            protected_.apply(player).apply(
+                ComponentVariable.init()
+                    .put("block", block.getType())
+                    .put("type", protection.getType())
+            )
         );
     }
 

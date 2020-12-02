@@ -45,7 +45,7 @@ help:
   flag: "Specify a flag for protection."
   remove: "Remove protection."
   info: "Display protection information."
-  member: "Add/Remove protection members."
+  member: "Edit members."
   transfer: "Change protection owner."
   persist: "Perform operations permanently."
   cleanup: "Delete protection of nonexistent blocks."
@@ -53,6 +53,8 @@ help:
   version: "Show version."
   help: "Show helps."
   example: "Example:"
+  run: "Click to run command."
+  details: "Click to show more details."
   availableFlags: "Available flags: {flags}"
 
 # //*<!-- syntax -->*/
@@ -83,4 +85,4 @@ help:
 # {variable}->variable
 
 # Don't touch
-version: 1
+version: 2

@@ -41,6 +41,11 @@ cleanup:
   # That means that all protections in the unloaded world will be deleted.
   unloaded: false
 
+# Multi locale support.
+locale:
+  enable: true
+  default: "en_us"
+
 database:
   # Database type. (sqlite/mysql)
   type: sqlite
