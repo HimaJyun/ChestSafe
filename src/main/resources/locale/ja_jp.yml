@@ -24,8 +24,8 @@ reloaded: "設定がリロードされました"
 info:
   - "種類: {type}"
   - "オーナー: {owner}({uuid})"
-  - "メンバー: [{members}]"
-  - "フラグ: &{{flags}&}"
+  - "メンバー: [{member(\", \")}]"
+  - "フラグ: &{{flag(\"=\",\", \")}&}"
 
 newVersion:
   - "新しいバージョンが利用可能: {old} -> {new}"
@@ -55,7 +55,7 @@ help:
   example: "例:"
   run: "クリックでコマンドを実行"
   details: "クリックで詳細を表示"
-  availableFlags: "利用可能なフラグ: {flags}"
+  availableFlags: "利用可能なフラグ: {flag}"
 
 # //*<!-- syntax -->*/
 # &0->Black(#000000)

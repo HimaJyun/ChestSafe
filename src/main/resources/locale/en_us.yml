@@ -24,8 +24,8 @@ reloaded: "Config has been reloaded."
 info:
   - "Type: {type}"
   - "Owner: {owner}({uuid})"
-  - "Member: [{members}]"
-  - "Flag: &{{flags}&}"
+  - "Member: [{member(\", \")}]"
+  - "Flag: &{{flag(\"=\",\", \")}&}"
 
 newVersion:
   - "New version available: {old} -> {new}"
@@ -55,7 +55,7 @@ help:
   example: "Example:"
   run: "Click to run command."
   details: "Click to show more details."
-  availableFlags: "Available flags: {flags}"
+  availableFlags: "Available flags: {flag}"
 
 # //*<!-- syntax -->*/
 # &0->Black(#000000)

@@ -141,17 +141,17 @@ public class Help extends SubCommand implements ErrorExecutor {
         builder.command("help").option("[command]").description(msg.help).usage("", "private").put(m);
 
         builder.command("member").option("<operator> [value]").description(msg.member)
-            .usageSuggest("member add", "member1")
-            .usageSuggest("member remove", "member1")
-            .usageSuggest("member modify", "member1 -member2")
+            .usageSuggest("add", "member1")
+            .usageSuggest("remove", "member1")
+            .usageSuggest("modify", "member1 -member2")
             .put(m);
         builder.command("persist").option("[true/false]").description(msg.persist)
-            .usageSuggest("persist", "")
-            .usageSuggest("persist true", "")
-            .usageSuggest("persist false", "")
+            .usageSuggest("", "")
+            .usageSuggest("true", "")
+            .usageSuggest("false", "")
             .put(m);
 
-        TextComponent[] flags = msg.availableFlags.apply("flags", c -> {
+        TextComponent[] flags = msg.availableFlags.apply("flag", c -> {
             c.setText("");
             List<BaseComponent> extra = new ArrayList<>((Protection.Flag.values().length * 2) - 1);
             boolean f = false;
@@ -197,10 +197,12 @@ public class Help extends SubCommand implements ErrorExecutor {
         private final TextComponent[] example;
         private final HoverEvent hoverSuggest;
         private final HoverEvent hoverDetails;
-        private final List<TextComponent[]> usage = new ArrayList<>();
+
         private String command;
         private String option;
         private TextComponent[] description;
+        private final List<TextComponent[]> usage = new ArrayList<>();
+
         private String fullCommand;
 
         private HelpBuilder(ComponentParser example, ComponentParser suggest, ComponentParser details) {
@@ -238,9 +240,9 @@ public class Help extends SubCommand implements ErrorExecutor {
         }
 
         private HelpBuilder usageSuggest(String suggest, String option) {
-            String cmd = fullCommand + suggest;
-            TextComponent c = new TextComponent(cmd);
-            c.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, option.length() == 0 ? cmd : cmd + " " + option));
+            String cmd = fullCommand +" "+ suggest;
+            TextComponent c = new TextComponent(option.length() == 0 ? cmd : cmd + " " + option);
+            c.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, cmd));
             c.setHoverEvent(hoverSuggest);
             usage.add(new TextComponent[]{c});
             return this;
