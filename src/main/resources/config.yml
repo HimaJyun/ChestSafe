@@ -2,6 +2,11 @@
 actionBar: true
 # Check new version.
 versionCheck: true
+# Destroy the hopper when transferring to a protected block.
+# This reduces the occurrence of events and reduces the load.
+# Warning: If you want to change default.flag.hopper from true to false, change this setting to false as well.
+# Otherwise all hoppers will be destroyed.
+hopperDestroy: true
 
 default:
   auto: false

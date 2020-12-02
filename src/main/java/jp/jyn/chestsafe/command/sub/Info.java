@@ -81,7 +81,7 @@ public class Info extends SubCommand {
         variable.put("member",(c,a) -> {
             final String separator = a.size() == 0 ? ", ": a.get(0);
             c.setText("");
-            List<BaseComponent> m = new ArrayList<>((protection.getMembers().size()*2)-1);
+            List<BaseComponent> m = new ArrayList<>((protection.getMembers().size()*2)/*-1*/);
             boolean first = true;
             for (UUID member : protection.getMembers()) {
                 if(first) {

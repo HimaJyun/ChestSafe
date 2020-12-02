@@ -19,6 +19,7 @@ flagSet: "フラグ: {flag}={value}"
 memberChanged: "保護のメンバーが変更されました"
 transferSuccess: "保護の譲渡に成功しました"
 transferWarning: "&6警告&r: 保護を譲渡するとあなたは操作できなくなります！"
+hopperDestroy: "{type} {block}を転送するには hopper=true のフラグが必要です (世界={world}, x={x}, y={y}, z={z}"
 reloaded: "設定がリロードされました"
 
 info:

@@ -28,6 +28,7 @@ public class MainConfig {
 
     public final boolean actionBar;
     public final boolean versionCheck;
+    public final boolean hopperDestroy;
 
     public final boolean localeEnable;
     public final String localeDefault;
@@ -42,6 +43,7 @@ public class MainConfig {
     MainConfig(FileConfiguration config) {
         actionBar = config.getBoolean("actionBar");
         versionCheck = config.getBoolean("versionCheck");
+        hopperDestroy = config.getBoolean("hopperDestroy");
 
         localeEnable = config.getBoolean("locale.enable");
         localeDefault = config.getString("locale.default");

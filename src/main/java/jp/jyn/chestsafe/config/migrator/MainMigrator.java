@@ -33,6 +33,8 @@ public class MainMigrator {
     }
 
     private static void v1to2(ConfigurationSection config) {
+        config.set("hopperDestroy",false); // 安全性重視
+
         config.set("cleanup.checkPerSecond", null);
         config.set("cleanup.checkMs", 50);
 

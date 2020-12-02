@@ -19,6 +19,7 @@ flagSet: "Flag set: {flag}={value}"
 memberChanged: "Protection member changed."
 transferSuccess: "Transfer of protection was successful."
 transferWarning: "&6Warning&r: When you transfer protection you will no longer be the owner!"
+hopperDestroy: "Need the hopper=true flag to transfer to the {type} {block}. (world={world}, x={x}, y={y}, z={z})."
 reloaded: "Config has been reloaded."
 
 info:

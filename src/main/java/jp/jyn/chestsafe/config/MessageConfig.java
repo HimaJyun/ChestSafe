@@ -68,6 +68,10 @@ public class MessageConfig {
     public final ComponentParser memberChanged;
     public final ComponentParser transferSuccess;
     public final ComponentParser transferWarning;
+    /**
+     * world, x, y, z, type, block
+     */
+    public final ComponentParser hopperDestroy;
     public final ComponentParser reloaded;
 
     /**
@@ -109,6 +113,7 @@ public class MessageConfig {
         memberChanged = parse(config, "memberChanged");
         transferSuccess = parse(config, "transferSuccess");
         transferWarning = parse(config, "transferWarning");
+        hopperDestroy = parse(config,"hopperDestroy");
         reloaded = parse(config, "reloaded");
 
         info = config.getStringList("info")
