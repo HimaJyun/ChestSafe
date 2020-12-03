@@ -21,7 +21,7 @@ public class VersionChecker {
     private final UpdateChecker checker = new GitHubReleaseChecker("HimaJyun", "ChestSafe");
 
     private long nextCheck = 0;
-    private String[] result = null;
+    private ComponentVariable variable = null;
 
     public VersionChecker(boolean enable, BukkitLocale<MessageConfig> message) {
         this.enable = enable;
@@ -34,8 +34,9 @@ public class VersionChecker {
         }
 
         if (nextCheck > System.currentTimeMillis()) {
-            if (result != null) {
-                sender.sendMessage(result);
+            if (variable != null) {
+                sender.sendMessage(MessageConfig.HEADER);
+                message.get(sender).newVersion.forEach(c -> c.apply(variable).send(sender));
             }
             return;
         }
@@ -50,7 +51,7 @@ public class VersionChecker {
                 return;
             }
 
-            ComponentVariable variable = ComponentVariable.init()
+            variable = ComponentVariable.init()
                 .put("old", currentVersion)
                 .put("new", latest.version)
                 .put("url", c -> {

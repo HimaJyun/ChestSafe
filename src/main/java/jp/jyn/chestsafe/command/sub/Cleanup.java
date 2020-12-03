@@ -58,6 +58,7 @@ public class Cleanup extends SubCommand {
         }
 
         if (ProtectionCleaner.isRunning()) {
+            ProtectionCleaner.addSender(sender);
             message.get(sender).cleanup.already.apply().send(sender);
             return Result.OK;
         }

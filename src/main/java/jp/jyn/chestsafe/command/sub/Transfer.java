@@ -39,7 +39,7 @@ public class Transfer extends SubCommand {
 
         registry.getUUIDAsync(args.element()).thenAcceptSync(uuid -> {
             if (!uuid.isPresent()) {
-                message.get(player).playerNotFound.apply("name",args.remove()).send(player);
+                message.get(player).playerNotFound.apply("name", args.remove()).send(player);
                 return;
             }
 

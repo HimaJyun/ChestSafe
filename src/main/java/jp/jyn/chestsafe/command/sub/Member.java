@@ -62,7 +62,7 @@ public class Member extends SubCommand {
                         operation = Operation.REMOVE;
                         value = value.substring(1);
                         if (value.isEmpty()) {
-                            message.get(player).invalidArgument.apply("value","-").send(player);
+                            message.get(player).invalidArgument.apply("value", "-").send(player);
                             return Result.ERROR;
                         }
                     }
@@ -70,7 +70,7 @@ public class Member extends SubCommand {
                 }
                 break;
             default:
-                message.get(player).invalidArgument.apply("value",tmp).send(player);
+                message.get(player).invalidArgument.apply("value", tmp).send(player);
                 return Result.ERROR;
         }
 
@@ -82,7 +82,7 @@ public class Member extends SubCommand {
             for (Map.Entry<String, Operation> entry : members.entrySet()) {
                 UUID uuid = map.get(entry.getKey());
                 if (uuid == null) {
-                    message.get(player).playerNotFound.apply("name",entry.getKey()).send(player);
+                    message.get(player).playerNotFound.apply("name", entry.getKey()).send(player);
                     return;
                 }
 

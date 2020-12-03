@@ -9,10 +9,7 @@ import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.chestsafe.util.VersionChecker;
 import jp.jyn.chestsafe.util.normalizer.ChestNormalizer;
 import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
-import jp.jyn.jbukkitlib.config.parser.component.Component;
-import jp.jyn.jbukkitlib.config.parser.component.ComponentParser;
 import jp.jyn.jbukkitlib.config.parser.component.ComponentVariable;
-import jp.jyn.jbukkitlib.util.ActionBarSender;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -35,7 +32,6 @@ import org.bukkit.scheduler.BukkitScheduler;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public class PlayerListener implements Listener {
@@ -48,10 +44,7 @@ public class PlayerListener implements Listener {
     private final PlayerAction action;
 
     private final Map<Material, MainConfig.ProtectionConfig> protectable;
-    private final boolean useActionBar;
-
-    private final Function<Player, ComponentParser> notice, denied, protected_, removed;
-    private final BiConsumer<Player, Component> sender;
+    private final BiConsumer<Player, ComponentVariable> notice, denied, protected_, removed;
 
     public PlayerListener(MainConfig config, BukkitLocale<MessageConfig> message,
                           UUIDRegistry registry, VersionChecker checker,
@@ -63,28 +56,48 @@ public class PlayerListener implements Listener {
         this.repository = repository;
         this.action = action;
 
-        this.useActionBar = config.actionBar;
         if (config.actionBar) {
-            notice = p -> message.get(p).actionbar.notice;
-            denied = p -> message.get(p).actionbar.denied;
-            protected_ = p -> message.get(p).actionbar.protected_;
-            removed = p -> message.get(p).actionbar.removed;
-
-            ActionBarSender actionbar = new ActionBarSender();
-            sender = (p, c) -> {
+            notice = (p, v) -> {
                 if (p.hasPermission("chestsafe.notice")) {
-                    c.actionbar(p);
+                    message.get(p).actionbar.notice.apply(v).actionbar(p);
+                }
+            };
+            denied = (p, v) -> {
+                if (p.hasPermission("chestsafe.notice")) {
+                    message.get(p).actionbar.denied.apply(v).actionbar(p);
+                }
+            };
+            protected_ = (p, v) -> {
+                if (p.hasPermission("chestsafe.notice")) {
+                    message.get(p).actionbar.protected_.apply(v).actionbar(p);
+                }
+            };
+            removed = (p, v) -> {
+                // In the creative mode, since PlayerInteractEvent and BlockBreakEvent occur simultaneously,
+                //   it is necessary not to overwrite the ActionBar.
+                if (p.getGameMode() != GameMode.CREATIVE && p.hasPermission("chestsafe.notice")) {
+                    message.get(p).actionbar.removed.apply(v).actionbar(p);
                 }
             };
         } else {
-            notice = p -> message.get(p).notice;
-            denied = p -> message.get(p).denied;
-            protected_ = p -> message.get(p).protected_;
-            removed = p -> message.get(p).removed;
-
-            sender = (p, c) -> {
+            notice = (p, v) -> {
                 if (p.hasPermission("chestsafe.notice")) {
-                    c.send(p);
+                    message.get(p).actionbar.notice.apply(v).send(p);
+                }
+            };
+            denied = (p, v) -> {
+                if (p.hasPermission("chestsafe.notice")) {
+                    message.get(p).actionbar.denied.apply(v).send(p);
+                }
+            };
+            protected_ = (p, v) -> {
+                if (p.hasPermission("chestsafe.notice")) {
+                    message.get(p).actionbar.protected_.apply(v).send(p);
+                }
+            };
+            removed = (p, v) -> {
+                if (p.hasPermission("chestsafe.notice")) {
+                    message.get(p).actionbar.removed.apply(v).send(p);
                 }
             };
         }
@@ -131,15 +144,12 @@ public class PlayerListener implements Listener {
             !isPassthrough(player)) {
             e.setUseInteractedBlock(Event.Result.DENY);
             e.setCancelled(true);
-            sender.accept(player, denied.apply(player).apply(variable));
+            denied.accept(player, variable);
             return;
         }
 
         variable.put("uuid", protection.getOwner());
-        registry.getNameAsync(protection.getOwner()).thenAcceptSync(name -> sender.accept(
-            player,
-            notice.apply(player).apply(variable.put("name", name.orElse("Unknown")))
-        ));
+        registry.getNameAsync(protection.getOwner()).thenAcceptSync(name -> notice.accept(player, variable.put("name", name.orElse("Unknown"))));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -157,13 +167,7 @@ public class PlayerListener implements Listener {
         Player player = e.getPlayer();
         if (!protection.isOwner(player) && !isPassthrough(player)) {
             e.setCancelled(true);
-            sender.accept(
-                e.getPlayer(),
-                denied.apply(e.getPlayer()).apply(ComponentVariable.init()
-                    .put("block", block.getType())
-                    .put("type", protection.getType())
-                )
-            );
+            denied.accept(player, ComponentVariable.init().put("block", block.getType()).put("type", protection.getType()));
             return;
         }
 
@@ -175,19 +179,7 @@ public class PlayerListener implements Listener {
         }
         repository.remove(protection);
 
-        if (useActionBar && player.getGameMode() == GameMode.CREATIVE) {
-            // In the creative mode, since PlayerInteractEvent and BlockBreakEvent occur simultaneously,
-            //   it is necessary not to overwrite the ActionBar.
-            return;
-        }
-
-        sender.accept(
-            e.getPlayer(),
-            removed.apply(e.getPlayer()).apply(ComponentVariable.init()
-                .put("block", block.getType())
-                .put("type", protection.getType())
-            )
-        );
+        removed.accept(e.getPlayer(), ComponentVariable.init().put("block", block.getType()).put("type", protection.getType()));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -234,14 +226,7 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        sender.accept(
-            player,
-            protected_.apply(player).apply(
-                ComponentVariable.init()
-                    .put("block", block.getType())
-                    .put("type", protection.getType())
-            )
-        );
+        protected_.accept(player, ComponentVariable.init().put("block", block.getType()).put("type", protection.getType()));
     }
 
     private boolean isRelatedChest(Block block) {

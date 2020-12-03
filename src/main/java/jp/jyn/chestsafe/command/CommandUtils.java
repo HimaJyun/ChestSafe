@@ -5,15 +5,22 @@ import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
 import jp.jyn.jbukkitlib.config.parser.component.ComponentVariable;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 // Waltz of brains far from object-oriented
@@ -86,5 +93,27 @@ public class CommandUtils {
             return Optional.empty();
         }
         return Optional.of(protection);
+    }
+
+    public static <E> List<BaseComponent> joinComponent(String delimiter, Collection<E> collection, Function<E, BaseComponent> mapper) {
+        if (collection.isEmpty()) return Collections.emptyList();
+
+        Iterator<E> i = collection.iterator();
+        //noinspection ResultOfMethodCallIgnored
+        i.hasNext();
+        E first = i.next();
+        if (!i.hasNext()) {
+            return Collections.singletonList(mapper.apply(first));
+        }
+
+        TextComponent d = new TextComponent(delimiter);
+        List<BaseComponent> l = new ArrayList<>((collection.size() * 2) - 1); // size()がO(1)じゃない場合問題だが、稀なので問題ない
+        l.add(mapper.apply(first));
+        do {
+            l.add(d);
+            l.add(mapper.apply(i.next()));
+        } while (i.hasNext());
+
+        return l;
     }
 }

@@ -6,6 +6,7 @@ import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.protection.ProtectionRepository.CheckElement;
 import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
+import jp.jyn.jbukkitlib.config.parser.component.ComponentParser;
 import jp.jyn.jbukkitlib.config.parser.component.ComponentVariable;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -29,6 +30,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 public class ProtectionCleaner implements Runnable {
     private final static int DEFAULT_CHECK_SIZE = 100;
@@ -39,7 +41,7 @@ public class ProtectionCleaner implements Runnable {
     private final ComponentVariable variable = ComponentVariable.init();
 
     private final Plugin plugin;
-    private final MessageConfig.CleanupMessage message;
+    private final BukkitLocale<MessageConfig> message;
     private final ProtectionRepository repository;
     private final long limit;
     private final boolean unloaded;
@@ -58,7 +60,7 @@ public class ProtectionCleaner implements Runnable {
     public ProtectionCleaner(Plugin plugin, MainConfig config, BukkitLocale<MessageConfig> message, ProtectionRepository repository,
                              long limit, TimeUnit unit, boolean unloaded, CommandSender... senders) {
         this.plugin = plugin;
-        this.message = message.get().cleanup;
+        this.message = message;
         this.repository = repository;
         this.unloaded = unloaded;
         this.senders.addAll(Arrays.asList(senders));
@@ -83,7 +85,7 @@ public class ProtectionCleaner implements Runnable {
         if (!RUNNING.compareAndSet(null, this)) {
             throw new IllegalStateException("Already running.");
         }
-        this.message.start.apply(variable).send(this.senders);
+        send(m -> m.start);
         executor.scheduleAtFixedRate(this, 1, 1, TimeUnit.SECONDS);
     }
 
@@ -117,12 +119,12 @@ public class ProtectionCleaner implements Runnable {
         int co = count.incrementAndGet();
         BigDecimal avg = average = BigDecimal.valueOf(ced).divide(BigDecimal.valueOf(co), MathContext.DECIMAL64);
         // 途中経過
-        message.progress.apply(variable).send(senders);
+        send(m -> m.progress);
 
         // チェック数の自動調整 (許容時間/(処理時間/処理数=1個辺りの所要時間)=許容時間内に処理できる数)
         BigDecimal timePerCheck = BigDecimal.valueOf(time).divide(BigDecimal.valueOf(check), MathContext.DECIMAL64);
         BigDecimal newSpeed = BigDecimal.valueOf(this.limit/*キャッシュできる*/).divide(timePerCheck, MathContext.DECIMAL64);
-        if (newSpeed.compareTo(BigDecimal.ZERO) == 0 ||// 新しい速度が0 (確認処理がが遅すぎる) か
+        if (newSpeed.compareTo(BigDecimal.ZERO) == 0 || // 新しい速度が0 (確認処理がが遅すぎる) か
             newSpeed.compareTo(avg.scaleByPowerOfTen(1)) >= 0) { // 平均値の10倍を超えている (異常値) なら
             newSpeed = avg; // 次の周期には平均値でやる
         }
@@ -159,7 +161,7 @@ public class ProtectionCleaner implements Runnable {
                 x.set(e.x);
                 y.set(e.y);
                 z.set(e.z);
-                message.removed.apply(variable).send(senders);
+                send(m -> m.removed);
             }
 
             long elapsed = System.nanoTime() - start;
@@ -171,6 +173,12 @@ public class ProtectionCleaner implements Runnable {
 
         removed.getAndAdd(remove);
         return System.nanoTime() - start;
+    }
+
+    private void send(Function<MessageConfig.CleanupMessage, ComponentParser> mapper) {
+        for (CommandSender sender : senders) {
+            mapper.apply(message.get(sender).cleanup).apply(this.variable).send(sender);
+        }
     }
 
     private boolean finished() {
@@ -190,9 +198,9 @@ public class ProtectionCleaner implements Runnable {
         old.executor.shutdown();
 
         if (old.finished()) {
-            old.message.end.apply(old.variable).send(old.senders);
+            old.send(m -> m.end);
         } else {
-            old.message.cancelled.apply(old.variable).send(old.senders);
+            old.send(m -> m.cancelled);
         }
         return true;
     }

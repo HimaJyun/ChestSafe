@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class MessageConfig {
     private final static String PREFIX = "[ChestSafe] ";
-    public final static String HEADER = "========== ChestSafe =========="; // TODO: TextComponentで良いかも
+    public final static String HEADER = "========== ChestSafe ==========";
     public final static String PLAYER_ONLY = PREFIX + ChatColor.RED + "This command can only be run by players.";
 
     public final String locale;
@@ -113,7 +113,7 @@ public class MessageConfig {
         memberChanged = parse(config, "memberChanged");
         transferSuccess = parse(config, "transferSuccess");
         transferWarning = parse(config, "transferWarning");
-        hopperDestroy = parse(config,"hopperDestroy");
+        hopperDestroy = parse(config, "hopperDestroy");
         reloaded = parse(config, "reloaded");
 
         info = config.getStringList("info")

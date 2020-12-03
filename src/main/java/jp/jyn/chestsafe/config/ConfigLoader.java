@@ -36,12 +36,7 @@ public class ConfigLoader {
         YamlLoader.copyDir(ChestSafe.getInstance(), "locale");
         if (!mainConfig.localeEnable) {
             String defaultLocale = mainConfig.localeDefault;
-            YamlLoader defaultLoader = messageLoader.get(defaultLocale);
-            if (defaultLoader == null) {
-                defaultLoader = new YamlLoader(ChestSafe.getInstance(), "locale/" + defaultLocale + ".yml");
-            } else {
-                defaultLoader.reloadConfig();
-            }
+            YamlLoader defaultLoader = reloadLocaleYaml(defaultLocale);
             messageLoader = Collections.singletonMap(defaultLocale, defaultLoader);
             messageConfig = new SingleLocale<>(defaultLocale, new MessageConfig(defaultLocale, defaultLoader.getConfig()));
             return;
@@ -55,15 +50,7 @@ public class ConfigLoader {
         messageLoader = YamlLoader.findYaml(ChestSafe.getInstance(), "locale")
             .stream()
             .map(YamlLoader::removeExtension)
-            .collect(Collectors.toMap(UnaryOperator.identity(), l -> {
-                YamlLoader loader = messageLoader.get(l);
-                if (loader == null) {
-                    return new YamlLoader(ChestSafe.getInstance(), "locale/" + l + ".yml");
-                } else {
-                    loader.reloadConfig();
-                    return loader;
-                }
-            }));
+            .collect(Collectors.toMap(UnaryOperator.identity(), this::reloadLocaleYaml));
         messageConfig = new MultiLocale<>(
             mainConfig.localeDefault,
             messageLoader.entrySet().stream().collect(Collectors.toMap(
@@ -71,6 +58,16 @@ public class ConfigLoader {
                 e -> new MessageConfig(e.getKey(), e.getValue().getConfig())
             ))
         );
+    }
+
+    private YamlLoader reloadLocaleYaml(String locale) {
+        YamlLoader loader = messageLoader.get(locale);
+        if (loader == null) {
+            return new YamlLoader(ChestSafe.getInstance(), "locale/" + locale + ".yml");
+        } else {
+            loader.reloadConfig();
+            return loader;
+        }
     }
 
     public MainConfig getMainConfig() {

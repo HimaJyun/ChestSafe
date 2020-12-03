@@ -30,9 +30,10 @@ public class Version extends SubCommand {
         sender.sendMessage(Objects.requireNonNull(description.getDescription()));
         sender.sendMessage("Developer: " + String.join(",", description.getAuthors()));
         sender.sendMessage("SourceCode: " + description.getWebsite());
-        if (sender instanceof Player) {
-            sender.sendMessage("Locale: " + ((Player) sender).getLocale());
-        }
+        sender.sendMessage(String.format("Locale: %s (%s)",
+            message.get(sender).locale,
+            (sender instanceof Player ? ((Player) sender).getLocale() : message.get().locale))
+        );
         checker.check(sender);
         return Result.OK;
     }

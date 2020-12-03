@@ -23,7 +23,7 @@ import java.util.Queue;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Flag extends SubCommand {
+public class Flag extends SubCommand { // APIの邪魔
     private enum Value {TRUE, FALSE, REVERSE, REMOVE}
 
     private final MainConfig config;
@@ -47,7 +47,7 @@ public class Flag extends SubCommand {
         try {
             flag = Protection.Flag.valueOf(tmp.toUpperCase(Locale.ENGLISH));
         } catch (IllegalArgumentException e) {
-            message.get(player).invalidArgument.apply("value",tmp).send(player);
+            message.get(player).invalidArgument.apply("value", tmp).send(player);
             return Result.ERROR;
         }
 
@@ -59,7 +59,7 @@ public class Flag extends SubCommand {
 
         Value value = parseValue(args.peek());
         if (value == null) {
-            message.get(player).invalidArgument.apply("value",args.peek()).send(player);
+            message.get(player).invalidArgument.apply("value", args.peek()).send(player);
             return Result.ERROR;
         }
 

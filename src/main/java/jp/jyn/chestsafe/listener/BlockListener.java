@@ -78,6 +78,8 @@ public class BlockListener implements Listener {
         }
     }
 
+    private Inventory previousHopperMove;
+
     @EventHandler(ignoreCancelled = true)
     public void onInventoryMoveItem(InventoryMoveItemEvent e) {
         // notice: Occurs when the hopper attempts to transfer an item
@@ -94,21 +96,22 @@ public class BlockListener implements Listener {
 
         // chest first search(There are many cases where the chest is protected than the hopper)
         Location chestLocation = chest.getLocation();
-        Block chestBlock = null;
-        Protection chestProtection = null;
         if (chestLocation != null) {
-            chestBlock = chestLocation.getBlock();
-            chestProtection = repository.get(chestBlock).orElse(null);
+            Block chestBlock = chestLocation.getBlock();
+            Protection chestProtection = repository.get(chestBlock).orElse(null);
 
-            if (chestProtection != null
-                && chestProtection.getType() == Protection.Type.PRIVATE
-                && !getFlag(chestProtection, chestBlock, Protection.Flag.HOPPER)) {
+            if (denyTransfer(chestBlock, chestProtection)) {
                 e.setCancelled(true);
+                if (!hopperDestroy ||
+                    hopper.equals(previousHopperMove)) { // many calls in chest -> hopper
+                    return;
+                }
+                previousHopperMove = hopper;
+
                 Location l = hopper.getLocation();
-                if (hopperDestroy && l != null) {
+                if (l != null) {
                     Block b = l.getBlock();
-                    Protection p = repository.get(b).orElse(null);
-                    if (p == null) {
+                    if (repository.get(b).orElse(null) == null) {
                         destroy(b, chestBlock, chestProtection);
                     }
                 }
@@ -121,35 +124,32 @@ public class BlockListener implements Listener {
             Block hopperBlock = hopperLocation.getBlock();
             Protection hopperProtection = repository.get(hopperBlock).orElse(null);
 
-            if (hopperProtection != null
-                && hopperProtection.getType() == Protection.Type.PRIVATE
-                && !getFlag(hopperProtection, hopperBlock, Protection.Flag.HOPPER)) {
+            if (denyTransfer(hopperBlock, hopperProtection)) {
                 e.setCancelled(true);
-                if (hopperDestroy && chestProtection != null) {
-                    destroy(chestBlock,hopperBlock,hopperProtection);
-                }
             }
         }
+    }
+
+    private boolean denyTransfer(Block block, Protection protection) {
+        if (protection == null || protection.getType() == Protection.Type.PUBLIC) {
+            return false;
+        }
+
+        Optional<Boolean> f = protection.getFlag(Protection.Flag.HOPPER);
+        //noinspection OptionalIsPresent
+        return f.isPresent() ? !f.get() : !protectable.get(block.getType()).flag.get(Protection.Flag.HOPPER);
     }
 
     private void destroy(Block block, Block target, Protection protection) {
         // イベントの中で壊すとクラッシュする
         Bukkit.getScheduler().runTask(plugin, (Runnable) block::breakNaturally);
         Player player = Bukkit.getPlayer(protection.getOwner());
-        if (player == null) {
-            return;
+        if (player != null) {
+            ComponentVariable variable = ComponentVariable.init();
+            variable.put("world", target.getWorld().getName()).put("x", target.getX()).put("y", target.getY()).put("z", target.getZ());
+            variable.put("from", block.getType().name()).put("to", target.getType().name());
+            message.get(player).hopperDestroy.apply(variable).send(player);
         }
-
-        ComponentVariable variable = ComponentVariable.init();
-        variable.put("world",target.getWorld().getName()).put("x",target.getX()).put("y",target.getY()).put("z",target.getZ());
-        variable.put("type",protection.getType().name()).put("block",block.getType().name());
-        message.get(player).hopperDestroy.apply(variable).send(player);
-    }
-
-    private Boolean getFlag(Protection protection, Block block, Protection.Flag type) {
-        Optional<Boolean> f = protection.getFlag(type);
-        //noinspection OptionalIsPresent
-        return f.isPresent() ? f.get() : protectable.get(block.getType()).flag.get(type);
     }
 
     @EventHandler(ignoreCancelled = true)

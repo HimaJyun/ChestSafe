@@ -1,5 +1,6 @@
 package jp.jyn.chestsafe.command.sub;
 
+import jp.jyn.chestsafe.command.CommandUtils;
 import jp.jyn.chestsafe.config.MessageConfig;
 import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.jbukkitlib.command.ErrorExecutor;
@@ -7,7 +8,6 @@ import jp.jyn.jbukkitlib.command.SubCommand;
 import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
 import jp.jyn.jbukkitlib.config.locale.MultiLocale;
 import jp.jyn.jbukkitlib.config.parser.component.ComponentParser;
-import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -151,23 +151,19 @@ public class Help extends SubCommand implements ErrorExecutor {
             .usageSuggest("false", "")
             .put(m);
 
-        TextComponent[] flags = msg.availableFlags.apply("flag", c -> {
+        TextComponent[] flags = msg.availableFlags.apply("flag", (c, a) -> {
             c.setText("");
-            List<BaseComponent> extra = new ArrayList<>((Protection.Flag.values().length * 2) - 1);
-            boolean f = false;
-            for (Protection.Flag flag : Protection.Flag.values()) {
-                if (f) {
-                    extra.add(new TextComponent(", "));
-                } else {
-                    f = true;
+            c.setExtra(CommandUtils.joinComponent(
+                a.isEmpty() ? ", " : a.get(0),
+                Arrays.asList(Protection.Flag.values()),
+                f -> {
+                    String name = f.name().toLowerCase(Locale.ENGLISH);
+                    TextComponent co = new TextComponent(name);
+                    co.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, HelpBuilder.BASE_COMMAND + "flag " + name));
+                    co.setHoverEvent(builder.hoverSuggest);
+                    return co;
                 }
-                String name = flag.name().toLowerCase(Locale.ENGLISH);
-                TextComponent component = new TextComponent(name);
-                component.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, HelpBuilder.BASE_COMMAND + "flag " + name));
-                component.setHoverEvent(builder.hoverSuggest);
-                extra.add(component);
-            }
-            c.setExtra(extra);
+            ));
         }).toTextComponent();
         builder.command("flag").option("<flag> [value]").description(msg.flag)
             .usage("hopper true", "explosion remove", "redstone")
@@ -240,7 +236,7 @@ public class Help extends SubCommand implements ErrorExecutor {
         }
 
         private HelpBuilder usageSuggest(String suggest, String option) {
-            String cmd = fullCommand +" "+ suggest;
+            String cmd = fullCommand + " " + suggest;
             TextComponent c = new TextComponent(option.length() == 0 ? cmd : cmd + " " + option);
             c.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, cmd));
             c.setHoverEvent(hoverSuggest);
@@ -278,7 +274,7 @@ public class Help extends SubCommand implements ErrorExecutor {
                 details.addAll(usage);
             }
 
-            return new HelpInfo(help,details.toArray(new TextComponent[0][0]));
+            return new HelpInfo(help, details.toArray(new TextComponent[0][0]));
         }
 
         private HelpBuilder put(Map<String, HelpInfo> map) {

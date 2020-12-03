@@ -42,7 +42,7 @@ public class Private extends SubCommand {
                 String name = args.remove();
                 UUID uuid = map.get(name);
                 if (uuid == null) {
-                    message.get(player).playerNotFound.apply("name",name).send(player);
+                    message.get(player).playerNotFound.apply("name", name).send(player);
                     return;
                 }
                 members.add(uuid);
