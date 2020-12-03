@@ -7,8 +7,8 @@ import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.jbukkitlib.command.SubCommand;
-import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
-import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
+import jp.jyn.jbukkitlib.config.parser.component.ComponentVariable;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -23,53 +23,48 @@ import java.util.Queue;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Flag extends SubCommand {
+public class Flag extends SubCommand { // APIの邪魔
     private enum Value {TRUE, FALSE, REVERSE, REMOVE}
 
-    private final String availableFlags;
-
     private final MainConfig config;
-    private final MessageConfig message;
+    private final BukkitLocale<MessageConfig> message;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
-    public Flag(MainConfig config, MessageConfig message, ProtectionRepository repository, PlayerAction action) {
+    public Flag(MainConfig config, BukkitLocale<MessageConfig> message, ProtectionRepository repository, PlayerAction action) {
         this.config = config;
         this.message = message;
         this.repository = repository;
         this.action = action;
-
-        this.availableFlags = message.help.availableFlags.toString(
-            "flags",
-            Arrays.stream(Protection.Flag.values()).map(Enum::name).map(str -> str.toLowerCase(Locale.ENGLISH)).collect(Collectors.joining(", "))
-        );
     }
 
     @Override
-    protected Result execCommand(Player sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
+        Player player = (Player) sender;
+
         String tmp = args.remove();
         Protection.Flag flag;
         try {
             flag = Protection.Flag.valueOf(tmp.toUpperCase(Locale.ENGLISH));
         } catch (IllegalArgumentException e) {
-            sender.sendMessage(message.invalidArgument.toString("value", tmp));
+            message.get(player).invalidArgument.apply("value", tmp).send(player);
             return Result.ERROR;
         }
 
         // permission
-        if (!sender.hasPermission("chestsafe.flag." + flag.name().toLowerCase(Locale.ENGLISH))) {
-            sender.sendMessage(message.doNotHavePermission.toString());
+        if (!player.hasPermission("chestsafe.flag." + flag.name().toLowerCase(Locale.ENGLISH))) {
+            message.get(player).doNotHavePermission.apply().send(player);
             return Result.OK;
         }
 
         Value value = parseValue(args.peek());
         if (value == null) {
-            sender.sendMessage(message.invalidArgument.toString("value", args.peek()));
+            message.get(player).invalidArgument.apply("value", args.peek()).send(player);
             return Result.ERROR;
         }
 
-        action.setAction(sender, b -> setFlag(sender, b, flag, value));
-        sender.sendMessage(message.ready.toString());
+        action.setAction(player, b -> setFlag(player, b, flag, value));
+        message.get(player).ready.apply().send(player);
         return Result.OK;
     }
 
@@ -98,7 +93,7 @@ public class Flag extends SubCommand {
     }
 
     private void setFlag(Player player, Block block, Protection.Flag flag, Value value) {
-        TemplateVariable variable = StringVariable.init();
+        ComponentVariable variable = ComponentVariable.init();
         Optional<Protection> optional = CommandUtils.checkProtection(message, repository, player, block, variable);
         if (!optional.isPresent()) {
             return;
@@ -131,11 +126,11 @@ public class Flag extends SubCommand {
 
         // send message
         variable.put("value", newValue).put("flag", flag.name().toLowerCase(Locale.ENGLISH));
-        player.sendMessage(message.flagSet.toString(variable));
+        message.get(player).flagSet.apply(variable).send(player);
     }
 
     @Override
-    protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
+    protected List<String> onTabComplete(CommandSender sender, Deque<String> args) {
         if (args.size() == 1) {
             return Arrays.stream(Protection.Flag.values())
                 .map(Enum::name)
@@ -161,17 +156,5 @@ public class Flag extends SubCommand {
     @Override
     protected int minimumArgs() {
         return 1;
-    }
-
-    @Override
-    public CommandHelp getHelp() {
-        return new CommandHelp(
-            "/chestsafe flag <flag> [value]",
-            message.help.flag.toString(),
-            "/chestsafe flag hopper true",
-            "/chestsafe flag explosion remove",
-            "/chestsafe flag redstone",
-            availableFlags
-        );
     }
 }

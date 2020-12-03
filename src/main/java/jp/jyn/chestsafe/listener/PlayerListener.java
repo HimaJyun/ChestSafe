@@ -8,10 +8,8 @@ import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.chestsafe.util.VersionChecker;
 import jp.jyn.chestsafe.util.normalizer.ChestNormalizer;
-import jp.jyn.jbukkitlib.config.parser.template.TemplateParser;
-import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
-import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
-import jp.jyn.jbukkitlib.util.ActionBarSender;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
+import jp.jyn.jbukkitlib.config.parser.component.ComponentVariable;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -33,6 +31,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 @SuppressWarnings("unused")
 public class PlayerListener implements Listener {
@@ -45,16 +44,9 @@ public class PlayerListener implements Listener {
     private final PlayerAction action;
 
     private final Map<Material, MainConfig.ProtectionConfig> protectable;
-    private final boolean useActionBar;
+    private final BiConsumer<Player, ComponentVariable> notice, denied, protected_, removed;
 
-    private final TemplateParser notice, denied, protected_, removed;
-    private final Sender sender;
-
-    private interface Sender {
-        void send(Player player, String message);
-    }
-
-    public PlayerListener(MainConfig config, MessageConfig message,
+    public PlayerListener(MainConfig config, BukkitLocale<MessageConfig> message,
                           UUIDRegistry registry, VersionChecker checker,
                           ProtectionRepository repository, PlayerAction action) {
         this.plugin = ChestSafe.getInstance();
@@ -64,28 +56,48 @@ public class PlayerListener implements Listener {
         this.repository = repository;
         this.action = action;
 
-        this.useActionBar = config.actionBar;
         if (config.actionBar) {
-            notice = message.actionbar.notice;
-            denied = message.actionbar.denied;
-            protected_ = message.actionbar.protected_;
-            removed = message.actionbar.removed;
-
-            ActionBarSender actionbar = new ActionBarSender();
-            sender = (p, m) -> {
+            notice = (p, v) -> {
                 if (p.hasPermission("chestsafe.notice")) {
-                    actionbar.send(p, m);
+                    message.get(p).actionbar.notice.apply(v).actionbar(p);
+                }
+            };
+            denied = (p, v) -> {
+                if (p.hasPermission("chestsafe.notice")) {
+                    message.get(p).actionbar.denied.apply(v).actionbar(p);
+                }
+            };
+            protected_ = (p, v) -> {
+                if (p.hasPermission("chestsafe.notice")) {
+                    message.get(p).actionbar.protected_.apply(v).actionbar(p);
+                }
+            };
+            removed = (p, v) -> {
+                // In the creative mode, since PlayerInteractEvent and BlockBreakEvent occur simultaneously,
+                //   it is necessary not to overwrite the ActionBar.
+                if (p.getGameMode() != GameMode.CREATIVE && p.hasPermission("chestsafe.notice")) {
+                    message.get(p).actionbar.removed.apply(v).actionbar(p);
                 }
             };
         } else {
-            notice = message.notice;
-            denied = message.denied;
-            protected_ = message.protected_;
-            removed = message.removed;
-
-            sender = (p, m) -> {
+            notice = (p, v) -> {
                 if (p.hasPermission("chestsafe.notice")) {
-                    p.sendMessage(m);
+                    message.get(p).actionbar.notice.apply(v).send(p);
+                }
+            };
+            denied = (p, v) -> {
+                if (p.hasPermission("chestsafe.notice")) {
+                    message.get(p).actionbar.denied.apply(v).send(p);
+                }
+            };
+            protected_ = (p, v) -> {
+                if (p.hasPermission("chestsafe.notice")) {
+                    message.get(p).actionbar.protected_.apply(v).send(p);
+                }
+            };
+            removed = (p, v) -> {
+                if (p.hasPermission("chestsafe.notice")) {
+                    message.get(p).actionbar.removed.apply(v).send(p);
                 }
             };
         }
@@ -122,7 +134,7 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        TemplateVariable variable = StringVariable.init()
+        ComponentVariable variable = ComponentVariable.init()
             .put("block", block.getType())
             .put("type", protection.getType());
 
@@ -132,15 +144,12 @@ public class PlayerListener implements Listener {
             !isPassthrough(player)) {
             e.setUseInteractedBlock(Event.Result.DENY);
             e.setCancelled(true);
-            sender.send(player, denied.toString(variable));
+            denied.accept(player, variable);
             return;
         }
 
         variable.put("uuid", protection.getOwner());
-        registry.getNameAsync(protection.getOwner()).thenAcceptSync(name -> sender.send(
-            player,
-            notice.toString(variable.put("name", name.orElse("Unknown")))
-        ));
+        registry.getNameAsync(protection.getOwner()).thenAcceptSync(name -> notice.accept(player, variable.put("name", name.orElse("Unknown"))));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -158,14 +167,7 @@ public class PlayerListener implements Listener {
         Player player = e.getPlayer();
         if (!protection.isOwner(player) && !isPassthrough(player)) {
             e.setCancelled(true);
-            sender.send(
-                e.getPlayer(),
-                denied.toString(
-                    StringVariable.init()
-                        .put("block", block.getType())
-                        .put("type", protection.getType())
-                )
-            );
+            denied.accept(player, ComponentVariable.init().put("block", block.getType()).put("type", protection.getType()));
             return;
         }
 
@@ -177,20 +179,7 @@ public class PlayerListener implements Listener {
         }
         repository.remove(protection);
 
-        if (useActionBar && player.getGameMode() == GameMode.CREATIVE) {
-            // In the creative mode, since PlayerInteractEvent and BlockBreakEvent occur simultaneously,
-            //   it is necessary not to overwrite the ActionBar.
-            return;
-        }
-
-        sender.send(
-            e.getPlayer(),
-            removed.toString(
-                StringVariable.init()
-                    .put("block", block.getType())
-                    .put("type", protection.getType())
-            )
-        );
+        removed.accept(e.getPlayer(), ComponentVariable.init().put("block", block.getType()).put("type", protection.getType()));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -237,10 +226,7 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        sender.send(
-            player,
-            protected_.toString(StringVariable.init().put("block", block.getType()).put("type", protection.getType()))
-        );
+        protected_.accept(player, ComponentVariable.init().put("block", block.getType()).put("type", protection.getType()));
     }
 
     private boolean isRelatedChest(Block block) {

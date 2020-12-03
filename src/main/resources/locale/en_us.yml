@@ -19,41 +19,44 @@ flagSet: "Flag set: {flag}={value}"
 memberChanged: "Protection member changed."
 transferSuccess: "Transfer of protection was successful."
 transferWarning: "&6Warning&r: When you transfer protection you will no longer be the owner!"
+hopperDestroy: "The hopper=true flag is required to transfer from {from} to {to}. (world={world}, x={x}, y={y}, z={z})"
 reloaded: "Config has been reloaded."
 
 info:
-    - "Type: {type}"
-    - "Owner: {owner}({uuid})"
-    - "Member: [{members}]"
-    - "Flag: &{{flags}&}"
+  - "Type: {type}"
+  - "Owner: {owner}({uuid})"
+  - "Member: [{member(\", \")}]"
+  - "Flag: &{{flag(=,\", \")}&}"
 
 newVersion:
-    - "New version available: {old} -> {new}"
-    - "Download: {url}"
+  - "New version available: {old} -> {new}"
+  - "Download: {url}"
 
 cleanup:
-    start: "Cleanup: started. ({speed} check per second)"
-    progress: "Cleanup: {checked} protections checked, {removed} protections removed."
-    removed: "Cleanup: removed world={world}, x={x}, y={y}, z={z}"
-    end: "Cleanup: finished."
-    already: "Cleanup: already in progress."
-    cancelled: "Cleanup: cancelled."
+  start: "Cleanup: started. ({limit}ms per second)"
+  progress: "Cleanup: {checked} protections checked, {removed} protections removed. ({speed}/s {average}/avg)"
+  removed: "Cleanup: removed world={world}, x={x}, y={y}, z={z}"
+  end: "Cleanup: finished."
+  already: "Cleanup: already in progress."
+  cancelled: "Cleanup: cancelled."
 
 help:
-    private: "Create private protection."
-    public: "Create public protection."
-    flag: "Specify a flag for protection."
-    remove: "Remove protection."
-    info: "Display protection information."
-    member: "Add/Remove protection members."
-    transfer: "Change protection owner."
-    persist: "Perform operations permanently."
-    cleanup: "Delete protection of nonexistent blocks."
-    reload: "Reload config."
-    version: "Show version."
-    help: "Show helps."
-    example: "Example:"
-    availableFlags: "Available flags: {flags}"
+  private: "Create private protection."
+  public: "Create public protection."
+  flag: "Specify a flag for protection."
+  remove: "Remove protection."
+  info: "Display protection information."
+  member: "Edit members."
+  transfer: "Change protection owner."
+  persist: "Perform operations permanently."
+  cleanup: "Delete protection of nonexistent blocks."
+  reload: "Reload config."
+  version: "Show version."
+  help: "Show helps."
+  example: "Example:"
+  run: "Click to run command."
+  details: "Click to show more details."
+  availableFlags: "Available flags: {flag(\", \")}"
 
 # //*<!-- syntax -->*/
 # &0->Black(#000000)
@@ -78,9 +81,9 @@ help:
 # &n->Underline
 # &o->Italic
 # &r->Reset
-# &&->&
+# #rrggbb (or #rgb)->Hex color
+# &->escape
 # {variable}->variable
-# &{variable&}->{variable}
 
 # Don't touch
-version: 1
+version: 2

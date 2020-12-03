@@ -6,6 +6,7 @@ import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.protection.ProtectionRepository;
 import jp.jyn.chestsafe.util.PlayerAction;
 import jp.jyn.jbukkitlib.command.SubCommand;
+import jp.jyn.jbukkitlib.config.locale.BukkitLocale;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,12 +19,12 @@ import java.util.Set;
 import java.util.UUID;
 
 public class Private extends SubCommand {
-    private final MessageConfig message;
+    private final BukkitLocale<MessageConfig> message;
     private final UUIDRegistry registry;
     private final ProtectionRepository repository;
     private final PlayerAction action;
 
-    public Private(MessageConfig message, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
+    public Private(BukkitLocale<MessageConfig> message, UUIDRegistry registry, ProtectionRepository repository, PlayerAction action) {
         this.message = message;
         this.registry = registry;
         this.repository = repository;
@@ -31,7 +32,9 @@ public class Private extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(Player sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
+        Player player = (Player) sender;
+
         // get and convert member uuid
         registry.getMultipleUUIDAsync(args).thenAcceptSync(map -> {
             Set<UUID> members = new HashSet<>(args.size());
@@ -39,27 +42,27 @@ public class Private extends SubCommand {
                 String name = args.remove();
                 UUID uuid = map.get(name);
                 if (uuid == null) {
-                    sender.sendMessage(message.playerNotFound.toString("name", name));
+                    message.get(player).playerNotFound.apply("name", name).send(player);
                     return;
                 }
                 members.add(uuid);
             }
 
-            action.setAction(sender, block -> CommandUtils.setProtection(
+            action.setAction(player, block -> CommandUtils.setProtection(
                 message, repository,
-                sender, block,
+                player, block,
                 Protection.newProtection()
                     .setType(Protection.Type.PRIVATE)
-                    .setOwner(sender)
+                    .setOwner(player)
                     .addMembers(members)
             ));
-            sender.sendMessage(message.ready.toString());
+            message.get(player).ready.apply().send(player);
         });
         return Result.OK;
     }
 
     @Override
-    protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
+    protected List<String> onTabComplete(CommandSender sender, Deque<String> args) {
         return CommandUtils.tabCompletePlayer(args);
     }
 
@@ -71,16 +74,5 @@ public class Private extends SubCommand {
     @Override
     protected boolean isPlayerOnly() {
         return true;
-    }
-
-    @Override
-    public CommandHelp getHelp() {
-        return new CommandHelp(
-            "/chestsafe private [member]",
-            message.help.private_.toString(),
-            "/chestsafe private",
-            "/chestsafe private member1",
-            "/chestsafe private member1 member2"
-        );
     }
 }

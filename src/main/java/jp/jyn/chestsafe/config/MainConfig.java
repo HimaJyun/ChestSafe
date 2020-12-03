@@ -5,6 +5,7 @@ import jp.jyn.chestsafe.protection.Protection;
 import jp.jyn.chestsafe.util.normalizer.BedNormalizer;
 import jp.jyn.chestsafe.util.normalizer.DoorNormalizer;
 import jp.jyn.jbukkitlib.cache.CacheFactory;
+import jp.jyn.jbukkitlib.cache.SizedFactory;
 import jp.jyn.jbukkitlib.util.PackagePrivate;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -27,6 +28,10 @@ public class MainConfig {
 
     public final boolean actionBar;
     public final boolean versionCheck;
+    public final boolean hopperDestroy;
+
+    public final boolean localeEnable;
+    public final String localeDefault;
 
     public final Map<Material, ProtectionConfig> protectable = new EnumMap<>(Material.class);
 
@@ -38,6 +43,10 @@ public class MainConfig {
     MainConfig(FileConfiguration config) {
         actionBar = config.getBoolean("actionBar");
         versionCheck = config.getBoolean("versionCheck");
+        hopperDestroy = config.getBoolean("hopperDestroy");
+
+        localeEnable = config.getBoolean("locale.enable");
+        localeDefault = config.getString("locale.default");
 
         ProtectionConfig defaultValue = new ProtectionConfig(config.getConfigurationSection("default"));
         for (Protection.Flag flag : Protection.Flag.values()) {
@@ -63,13 +72,21 @@ public class MainConfig {
         public final boolean enable;
         public final long delay;
         public final long interval;
-        public final int checkPerSecond;
+        public final int limit;
+        public final boolean unloaded;
 
         private CleanupConfig(ConfigurationSection config) {
             enable = config.getBoolean("enable", true);
             delay = config.getLong("delay", TimeUnit.MINUTES.toSeconds(10));
             interval = config.getLong("interval", TimeUnit.DAYS.toSeconds(1));
-            checkPerSecond = config.getInt("checkPerSecond", 100);
+            unloaded = config.getBoolean("unloaded", false);
+
+            int l = config.getInt("limit", 50);
+            if (l >= 1000 || l <= 0) {
+                ChestSafe.getInstance().getLogger().warning("range of cleanup.limit is 1-999");
+                l = 50;
+            }
+            limit = l;
         }
     }
 
@@ -133,9 +150,9 @@ public class MainConfig {
         public final CacheFactory location;
 
         private CacheConfig(ConfigurationSection config) {
-            id = new CacheFactory.Sized(config.getInt("id", -1));
-            location = new CacheFactory.Sized(config.getInt("location", 30000));
-            protection = new CacheFactory.Sized(config.getInt("protection", 10000));
+            id = new SizedFactory(config.getInt("id", -1));
+            location = new SizedFactory(config.getInt("location", 30000));
+            protection = new SizedFactory(config.getInt("protection", 10000));
         }
     }
 

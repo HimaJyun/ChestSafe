@@ -1,8 +1,9 @@
 package jp.jyn.chestsafe.protection;
 
 import jp.jyn.chestsafe.db.driver.ProtectionDriver;
-import jp.jyn.jbukkitlib.util.Lazy;
 import jp.jyn.jbukkitlib.util.PackagePrivate;
+import jp.jyn.jbukkitlib.util.lazy.Lazy;
+import jp.jyn.jbukkitlib.util.lazy.SimpleLazy;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -36,9 +37,9 @@ public class SavedProtection implements Protection {
         type = protection.getType();
         owner = protection.getOwner();
 
-        members = new Lazy.Simple<>(HashSet::new);
+        members = Lazy.of(HashSet::new);
         members.get().addAll(protection.getMembers());
-        flags = new Lazy.Simple<>(() -> new EnumMap<>(Flag.class));
+        flags = Lazy.of(() -> new EnumMap<>(Flag.class));
         protection.getFlags().forEach((key, value) -> flags.get().put(key, value));
     }
 
@@ -51,8 +52,8 @@ public class SavedProtection implements Protection {
         type = Type.valueOf(info.type);
         owner = Objects.requireNonNull(idRepository.idToUUID(info.owner));
 
-        members = new Lazy.Simple<>(info.hasMember ? this::loadMembers : HashSet::new);
-        flags = new Lazy.Simple<>(info.hasFlag ? this::loadFlags : () -> new EnumMap<>(Flag.class));
+        members = new SimpleLazy<>(info.hasMember ? this::loadMembers : HashSet::new);
+        flags = Lazy.of(info.hasFlag ? this::loadFlags : () -> new EnumMap<>(Flag.class));
     }
 
     // region lazyload

@@ -11,6 +11,7 @@ import jp.jyn.chestsafe.util.normalizer.ChestNormalizer;
 import jp.jyn.chestsafe.util.normalizer.DoorNormalizer;
 import jp.jyn.chestsafe.util.normalizer.LocationNormalizer;
 import jp.jyn.chestsafe.util.normalizer.NoOpNormalizer;
+import jp.jyn.jbukkitlib.util.lazy.Lazy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -26,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Queue;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class ProtectionRepository {
@@ -59,7 +60,6 @@ public class ProtectionRepository {
     private final Set<Material> protectable = EnumSet.noneOf(Material.class);
 
     private final PluginManager pluginManager = Bukkit.getServer().getPluginManager();
-    private final ProtectionSetEvent eventSet = new ProtectionSetEvent();
 
     private final ProtectionDriver protectionDriver;
     private final IDRepository idRepository;
@@ -145,14 +145,11 @@ public class ProtectionRepository {
             return Result.ALREADY_PROTECTED;
         }
 
-        eventSet.setCancelled(false);
-        eventSet.setBlock(block);
-        eventSet.setProtection(protection);
-        pluginManager.callEvent(eventSet);
-        if (eventSet.isCancelled()) {
+        ProtectionSetEvent event = new ProtectionSetEvent(block, protection);
+        pluginManager.callEvent(event);
+        if (event.isCancelled()) {
             return Result.CANCELLED;
         }
-        protection = eventSet.getProtection();
 
         // add protection
         IntLocation intLocation = intLocation(location);
@@ -343,45 +340,66 @@ public class ProtectionRepository {
     /**
      * Check all protections.
      *
-     * @param limit    Number of protections to check
-     * @param offsetId Paging offset
-     * @param checker  Protection remove checker
-     * @return offset id
+     * @param queue    result queue
+     * @param offsetId offset
+     * @param limit    size limit
+     * @return next offset id, If -1 is it end.
      */
-    public int checkAll(int limit, int offsetId, Checker checker) {
-        Integer id = 0;
-        // cache bypass search.
-        for (Map.Entry<Integer, IntLocation> protection : idRepository.getProtections(limit, offsetId)) {
-            id = protection.getKey();
-            IntLocation location = protection.getValue();
-            String world = idRepository.idToWorld(location.world).orElse(null);
+    public int checkExists(Queue<CheckElement> queue, int offsetId, int limit) {
+        List<Map.Entry<Integer, IntLocation>> protections = idRepository.getProtections(limit, offsetId);
 
-            final int i = id;
-            Checker.Do result = checker.check(world, location.x, location.y, location.z, () -> get(i));
-            if (result == Checker.Do.REMOVE) {
-                // remove
-                idToProtectionCache.remove(id);
-                idRepository.remove(id, location);
+        // そもそもリミットまで取れてない = 末尾まで到達した
+        // それ以外 = 最後のID(DB側でソートされるので、最後の要素のID)
+        int id = protections.size() < limit ? -1 : protections.get(protections.size() - 1).getKey();
+
+        for (Map.Entry<Integer, IntLocation> protection : protections) {
+            CheckElement e = new CheckElement(idRepository, idToProtectionCache, protection.getKey(), protection.getValue());
+            if (!queue.offer(e)) { // 容量制限
+                id = e.id - 1; // offsetIdはその値を"含まない"。なので挿入できなかったものはIDを-1しておけば次のサイクルで入る。
+                break;
             }
         }
+
         return id;
     }
 
-    @FunctionalInterface
-    public interface Checker {
-        enum Do {NOTHING, REMOVE}
+    public final static class CheckElement {
+        private final IDRepository idRepository;
+        private final Map<Integer, Protection> idToProtectionCache;
+
+        private final Integer id;
+        private final IntLocation location;
 
         /**
-         * Check protection.
-         *
-         * @param world      world name
-         * @param x          x
-         * @param y          y
-         * @param z          z
-         * @param protection protection
-         * @return What to do with this protection?
+         * must NOT be called from the not main thread.
          */
-        Do check(String world, int x, int y, int z, Supplier<Protection> protection);
+        public final Lazy<String> world;
+        public final int x;
+        public final int y;
+        public final int z;
+
+        private CheckElement(IDRepository idRepository, Map<Integer, Protection> idToProtectionCache, Integer id, IntLocation location) {
+            this.idRepository = idRepository;
+            this.idToProtectionCache = idToProtectionCache;
+            this.id = id;
+            this.location = location;
+            x = location.x;
+            y = location.y;
+            z = location.z;
+            world = Lazy.of(() -> this.idRepository.idToWorld(this.location.world)
+                .orElseThrow(() -> new IllegalArgumentException(
+                    String.format("Database broken (world id %d is not found)", this.location.world)
+                ))
+            );
+        }
+
+        /**
+         * must NOT be called from the not main thread.
+         */
+        public void remove() {
+            idToProtectionCache.remove(id);
+            idRepository.remove(id, location);
+        }
     }
 
     private Location normalizeLocation(Block block) {
