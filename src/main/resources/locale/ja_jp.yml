@@ -1,7 +1,7 @@
 doNotHavePermission: "&c権限がありません！"
 missingArgument: "&c引数が足りません！"
 invalidArgument: "&cコマンドが間違っています&r: {value}"
-playerNotFound: "&cプレイヤーが見つかりません&r: {name}"
+playerNotFound: "&cプレイヤーがみつかりません&r: {name}"
 
 notice: "{type} {block}: {name}({uuid})"
 denied: "&cこの{type} {block}はあなたの物ではありません！"

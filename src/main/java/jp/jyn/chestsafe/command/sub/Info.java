@@ -78,16 +78,17 @@ public class Info extends SubCommand {
 
         variable.put("member", (c, a) -> {
             c.setText("");
-            c.setExtra(CommandUtils.joinComponent(
-                a.isEmpty() ? ", " : a.get(0),
-                protection.getMembers(),
-                u -> {
-                    String n = name.get(u);
-                    TextComponent co = new TextComponent(n);
-                    co.setHoverEvent(hoverPlayer(u, n));
-                    return co;
-                }
-            ));
+            Set<UUID> uuids = protection.getMembers();
+            if (!uuids.isEmpty()) {
+                c.setExtra(CommandUtils.joinComponent(a.isEmpty() ? ", " : a.get(0), uuids,
+                    u -> {
+                        String n = name.get(u);
+                        TextComponent co = new TextComponent(n);
+                        co.setHoverEvent(hoverPlayer(u, n));
+                        return co;
+                    }
+                ));
+            }
         });
         variable.put("flag", (c, a) -> {
             final String separator;

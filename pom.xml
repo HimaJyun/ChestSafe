@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>jp.jyn</groupId>
     <artifactId>ChestSafe</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
     <url>https://github.com/HimaJyun/ChestSafe</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
-        <spigot.version>1.16.4-R0.1-SNAPSHOT</spigot.version>
+        <spigot.version>1.16.5-R0.1-SNAPSHOT</spigot.version>
         <relocation.package>jp.jyn.chestsafe.lib</relocation.package>
     </properties>
 
@@ -48,7 +48,7 @@
         <dependency>
             <groupId>jp.jyn</groupId>
             <artifactId>JBukkitLib</artifactId>
-            <version>1.6.0</version>
+            <version>1.8.0</version>
         </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
